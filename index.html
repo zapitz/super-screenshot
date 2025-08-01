@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Screenshot</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <h1>Super Screenshot</h1>
+                    <p>Captura de pantalla masiva de URLs</p>
+                </div>
+                <button id="configBtn" class="config-btn" title="Configuración">
+                    ⚙️
+                </button>
+            </div>
+        </header>
+
+        <div class="mode-selector">
+            <h3>Selecciona el modo de captura:</h3>
+            <div class="mode-options">
+                <label class="mode-option">
+                    <input type="radio" name="captureMode" value="images" checked>
+                    <div class="mode-card">
+                        <span class="mode-icon">📷</span>
+                        <span class="mode-title">Solo Imágenes</span>
+                        <span class="mode-desc">Guarda las capturas como archivos PNG individuales en una carpeta</span>
+                    </div>
+                </label>
+                <label class="mode-option">
+                    <input type="radio" name="captureMode" value="pdf">
+                    <div class="mode-card">
+                        <span class="mode-icon">📄</span>
+                        <span class="mode-title">Generar PDF</span>
+                        <span class="mode-desc">Crea un documento PDF con todas las capturas</span>
+                    </div>
+                </label>
+            </div>
+            <div id="pdfNameSection" style="display: none; margin-top: 20px;">
+                <label for="pdfFileName">Nombre del archivo PDF:</label>
+                <input type="text" id="pdfFileName" placeholder="super-screenshot" style="width: 100%; padding: 10px; background-color: #2d2d2d; border: 1px solid #424242; border-radius: 4px; color: #e0e0e0; font-size: 16px;">
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="urls-section">
+                <label for="urlsInput">URLs (una por línea):</label>
+                <textarea id="urlsInput" placeholder="https://ejemplo1.com&#10;https://ejemplo2.com&#10;https://ejemplo3.com"></textarea>
+                <div class="url-controls">
+                    <span id="urlCount">0 URLs</span>
+                    <button id="clearBtn" class="secondary-btn">Limpiar</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>⚙️ Configuración</h3>
+                
+                <div class="setting-group">
+                    <label for="resolution">Resolución de pantalla:</label>
+                    <select id="resolution">
+                        <option value="1440x1600" selected>1440x1600 (Default)</option>
+                        <option value="1920x1080">1920x1080 (Full HD)</option>
+                        <option value="1366x768">1366x768 (Laptop)</option>
+                        <option value="1280x900">1280x900 (Banner/Header)</option>
+                        <option value="1280x720">1280x720 (HD)</option>
+                        <option value="375x667">375x667 (iPhone SE)</option>
+                        <option value="custom">Personalizada</option>
+                    </select>
+                    
+                    <div id="customResolution" class="custom-resolution" style="display: none;">
+                        <input type="number" id="customWidth" placeholder="Ancho" min="320" max="3840">
+                        <span>x</span>
+                        <input type="number" id="customHeight" placeholder="Alto" min="320" max="2160">
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="lazyLoadScroll" checked>
+                        Activar scroll para lazy load
+                    </label>
+                    <div class="sub-setting">
+                        <label for="scrollDistance">Distancia de scroll (px):</label>
+                        <input type="number" id="scrollDistance" value="1000" min="100" max="5000" step="100">
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="detectWordPress" checked>
+                        Detectar fecha de publicación de WordPress
+                    </label>
+                </div>
+
+                <div class="setting-group">
+                    <label for="captureMode">Modo de captura:</label>
+                    <select id="captureMode">
+                        <option value="resolution">Altura según resolución</option>
+                        <option value="fullsite">Sitio completo (Full Site)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="waitTime">Tiempo de espera antes de captura (ms):</label>
+                    <input type="number" id="waitTime" value="2000" min="500" max="10000" step="500">
+                </div>
+
+                <input type="hidden" id="navigationTimeout" value="60">
+                <input type="hidden" id="browserPath" value="auto">
+            </div>
+        </div>
+
+        <div class="action-section">
+            <button id="startBtn" class="primary-btn" disabled>
+                <span class="btn-icon" id="startBtnIcon">📸</span>
+                <span id="startBtnText">Iniciar Capturas</span>
+            </button>
+            <button id="stopBtn" class="danger-btn" style="display: none;">
+                <span class="btn-icon">⏹️</span>
+                Detener
+            </button>
+        </div>
+
+        <div id="consoleSection" class="console-section" style="display: none;">
+            <div class="console-header">
+                <h3>Consola de Procesos</h3>
+                <div id="spinner" class="spinner" style="display: none;">
+                    <div class="spinner-circle"></div>
+                </div>
+            </div>
+            <div id="consoleOutput" class="console-output"></div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div id="progressText" class="progress-text">0 de 0 completadas</div>
+        </div>
+
+        <div id="resultsSection" class="results-section" style="display: none;">
+            <div id="imageActions" style="display: none;">
+                <button id="openFolderBtn" class="primary-btn">
+                    <span class="btn-icon">📁</span>
+                    Ir a carpeta de destino
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
