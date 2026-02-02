@@ -22,12 +22,15 @@ async function captureScreenshot(url, settings) {
     const browser = await puppeteer.launch({
         headless: true,
         executablePath: executablePath,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-cache']
     });
 
     try {
         const page = await browser.newPage();
-        
+
+        // Disable cache to ensure fresh content on every capture
+        await page.setCacheEnabled(false);
+
         // Set viewport
         await page.setViewport({
             width: settings.resolution.width,
