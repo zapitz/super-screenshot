@@ -6,18 +6,25 @@ Super Screenshot is an Electron application that captures screenshots of multipl
 ## Key Features Implemented
 - Batch URL processing with automatic extraction from mixed text
 - Two capture modes: Images only or PDF generation
-- Configurable screenshot resolutions with 1440x1600 as default
-- WordPress publish date detection
+- Configurable screenshot resolutions with 1440x1600 as default (includes mobile presets)
+- WordPress publish date detection with multiple selector support
 - Customizable PDF cover pages with logo support
 - Automatic file naming and organization in Downloads folder
+- Configuration page with advanced PDF and capture settings
+- Smart file naming: YY-MM-DD-titulo-del-articulo.png format for images
+- Lazy load scrolling support for dynamic content
+- Full-page or viewport-based capture modes
+- Browser auto-detection (Chrome, Edge, Brave, Chromium)
 
 ## Important Technical Details
 
 ### Architecture
 - **Main Process**: `main.js` - Handles file operations, window management, IPC
 - **Renderer Process**: `renderer.js` - UI logic and user interactions
+- **Config Renderer**: `config-renderer.js` - Configuration page logic
 - **Screenshot Module**: `screenshot.js` - Puppeteer integration for captures
 - **PDF Generator**: `pdf-generator.js` - PDFKit implementation
+- **Browser Detector**: `browser-detector.js` - Cross-platform browser detection
 
 ### Key Improvements Made During Development
 1. **Removed puppeteer for puppeteer-core** to avoid Chromium downloads
@@ -27,14 +34,34 @@ Super Screenshot is an Electron application that captures screenshots of multipl
 5. **Added URL extraction** from mixed text content
 
 ### Configuration Storage
-- Settings stored in Electron's userData directory
+- Settings stored in Electron's userData directory as `config.json`
 - Logo files saved in `userData/logos/`
 - Uses IPC for config management between processes
+- Configuration includes: PDF margins, font sizes, cover page settings, screenshot delays, etc.
+
+### Current File Structure
+```
+super-screenshot/
+├── main.js                 # Electron main process
+├── renderer.js             # Main UI renderer
+├── config-renderer.js      # Config page renderer
+├── screenshot.js           # Puppeteer screenshot logic
+├── pdf-generator.js        # PDF generation with PDFKit
+├── browser-detector.js     # Cross-platform browser detection
+├── index.html              # Main UI
+├── config.html             # Configuration page
+├── styles.css              # Shared styles
+├── package.json            # Dependencies and scripts
+└── CLAUDE.md               # This file
+```
 
 ### Known Limitations
-- WordPress date detection may not work on all themes
+- WordPress date detection may not work on all themes (supports 14+ common selectors)
 - Page numbering was removed due to PDFKit positioning issues
-- Browser must be installed (Chrome/Edge/Chromium)
+- Browser must be installed (Chrome/Edge/Chromium/Brave)
+- Security: nodeIntegration enabled and contextIsolation disabled (needs fixing for production)
+- No error recovery mechanism for failed captures
+- PDF images are stored temporarily and cleaned after generation
 
 ## Continuing Development on Another Machine
 
@@ -64,12 +91,36 @@ npm run lint      # Check code style (if configured)
 npm run build     # Build for distribution
 ```
 
-## Future Enhancements
-- Add progress bar for individual URLs
-- Implement retry mechanism for failed captures
-- Add export/import configuration feature
-- Support for authenticated sites
-- Batch PDF operations (merge, split)
+## Production Readiness Roadmap
+
+### Critical (Must-Have for v1.0)
+- [ ] **Security hardening**: Enable contextIsolation, disable nodeIntegration, implement preload script
+- [ ] **Code signing**: Set up certificates for Windows/macOS to avoid security warnings
+- [ ] **Build configuration**: Configure electron-builder with proper icons, package info, and installers
+- [ ] **Error handling**: Add retry mechanism and better error reporting
+- [ ] **Auto-updater**: Implement electron-updater for seamless updates
+- [ ] **License and legal**: Add proper LICENSE file, privacy policy, and terms if needed
+- [ ] **Testing**: Basic test suite for core functionality
+- [ ] **Documentation**: User manual and troubleshooting guide
+
+### Important (Should-Have for v1.0)
+- [ ] **Progress indicators**: Per-URL progress bars
+- [ ] **Export/import config**: Backup and restore settings
+- [ ] **Better browser detection**: Handle edge cases and provide manual fallback
+- [ ] **Crash reporting**: Sentry or similar for production monitoring
+- [ ] **Internationalization**: Multi-language support (at least EN/ES)
+- [ ] **Performance optimization**: Parallel screenshot capture (configurable concurrency)
+- [ ] **File size optimization**: Image compression options
+
+### Nice-to-Have (v1.1+)
+- [ ] Support for authenticated sites (login flow)
+- [ ] Batch PDF operations (merge, split)
+- [ ] Cloud storage integration
+- [ ] Scheduled captures
+- [ ] API/CLI mode for automation
+- [ ] Screenshot comparison tools
+- [ ] Custom CSS injection for captures
+- [ ] Video capture support
 
 ## Debugging Tips
 - Use Chrome DevTools: Ctrl+Shift+I (removed by default in production)

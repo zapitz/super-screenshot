@@ -10,13 +10,14 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <div>
+                <div class="header-title">
                     <h1>Super Screenshot</h1>
                     <p>Captura de pantalla masiva de URLs</p>
                 </div>
-                <button id="configBtn" class="config-btn" title="Configuración">
-                    ⚙️
-                </button>
+                <div class="header-buttons">
+                    <button id="clearCacheBtn" class="config-btn" title="Limpiar Cache">🧹</button>
+                    <button id="configBtn" class="config-btn" title="Configuracion">⚙️</button>
+                </div>
             </div>
         </header>
 
@@ -40,77 +41,130 @@
                     </div>
                 </label>
             </div>
+
+            <!-- Profile selector below mode cards -->
+            <div class="profile-selector-row">
+                <label for="activeProfile">Perfil:</label>
+                <select id="activeProfile"></select>
+                <span id="profileIndicator" class="profile-indicator" title="Color de marca del perfil"></span>
+            </div>
+
             <div id="pdfNameSection" style="display: none; margin-top: 20px;">
-                <label for="pdfFileName">Nombre del archivo PDF:</label>
-                <input type="text" id="pdfFileName" placeholder="super-screenshot" style="width: 100%; padding: 10px; background-color: #2d2d2d; border: 1px solid #424242; border-radius: 4px; color: #e0e0e0; font-size: 16px;">
+                <div class="pdf-fields-row">
+                    <div class="pdf-field-group">
+                        <label for="pdfFileName">Nombre del archivo PDF:</label>
+                        <input type="text" id="pdfFileName" placeholder="super-screenshot">
+                    </div>
+                    <div class="pdf-field-group">
+                        <label for="pdfShortDesc">
+                            Descripción corta:
+                            <span class="info-icon" title="Si se completa, esta descripción reemplazará la del perfil activo en la portada del PDF.">ℹ️</span>
+                        </label>
+                        <input type="text" id="pdfShortDesc" placeholder="Ej: Reporte del 1 al 15 de enero" maxlength="200">
+                        <small class="char-counter"><span id="shortDescCount">0</span>/200</small>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="main-content">
             <div class="urls-section">
-                <label for="urlsInput">URLs (una por línea):</label>
-                <textarea id="urlsInput" placeholder="https://ejemplo1.com&#10;https://ejemplo2.com&#10;https://ejemplo3.com"></textarea>
+                <div class="urls-header">
+                    <h3>🔗 URLs a Capturar</h3>
+                    <div class="urls-actions">
+                        <button id="importCsvBtn" class="action-btn" title="Importar CSV">
+                            📄 Importar CSV
+                        </button>
+                        <button id="pasteBtn" class="action-btn" title="Pegar URLs">
+                            📋 Pegar
+                        </button>
+                        <button id="validateBtn" class="action-btn" title="Validar URLs">
+                            🔍 Validar
+                        </button>
+                        <button id="clearBtn" class="action-btn danger" title="Limpiar todo">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="urls-list-container">
+                    <div id="urlsList" class="urls-list">
+                        <div class="urls-empty">
+                            Pega URLs o importa un archivo CSV
+                        </div>
+                    </div>
+                </div>
+
                 <div class="url-controls">
                     <span id="urlCount">0 URLs</span>
-                    <button id="clearBtn" class="secondary-btn">Limpiar</button>
+                    <span id="validationStatus"></span>
                 </div>
             </div>
 
+            <!-- Input oculto para CSV -->
+            <input type="file" id="csvInput" accept=".csv,.txt" style="display: none;">
+
             <div class="settings-section">
-                <h3>⚙️ Configuración</h3>
-                
-                <div class="setting-group">
-                    <label for="resolution">Resolución de pantalla:</label>
-                    <select id="resolution">
-                        <option value="1440x1600" selected>1440x1600 (Default)</option>
-                        <option value="1920x1080">1920x1080 (Full HD)</option>
-                        <option value="1366x768">1366x768 (Laptop)</option>
-                        <option value="1280x900">1280x900 (Banner/Header)</option>
-                        <option value="1280x720">1280x720 (HD)</option>
-                        <option value="375x667">375x667 (iPhone SE)</option>
-                        <option value="custom">Personalizada</option>
-                    </select>
-                    
-                    <div id="customResolution" class="custom-resolution" style="display: none;">
-                        <input type="number" id="customWidth" placeholder="Ancho" min="320" max="3840">
-                        <span>x</span>
-                        <input type="number" id="customHeight" placeholder="Alto" min="320" max="2160">
+                <h3>📷 Opciones de Captura</h3>
+
+                <div class="settings-content">
+                    <div class="setting-group">
+                        <label for="resolution">Resolución de pantalla:</label>
+                        <select id="resolution">
+                            <option value="1440x1600" selected>1440x1600 (Default)</option>
+                            <option value="1920x1080">1920x1080 (Full HD)</option>
+                            <option value="1366x768">1366x768 (Laptop)</option>
+                            <option value="1280x900">1280x900 (Banner/Header)</option>
+                            <option value="1280x720">1280x720 (HD)</option>
+                            <option value="375x667">375x667 (iPhone SE)</option>
+                            <option value="custom">Personalizada</option>
+                        </select>
+
+                        <div id="customResolution" class="custom-resolution" style="display: none;">
+                            <input type="number" id="customWidth" placeholder="Ancho" min="320" max="3840">
+                            <span>x</span>
+                            <input type="number" id="customHeight" placeholder="Alto" min="320" max="2160">
+                        </div>
                     </div>
-                </div>
 
-                <div class="setting-group">
-                    <label>
-                        <input type="checkbox" id="lazyLoadScroll" checked>
-                        Activar scroll para lazy load
-                    </label>
-                    <div class="sub-setting">
-                        <label for="scrollDistance">Distancia de scroll (px):</label>
-                        <input type="number" id="scrollDistance" value="1000" min="100" max="5000" step="100">
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="lazyLoadScroll">
+                            Activar scroll para lazy load
+                        </label>
+                        <div class="sub-setting">
+                            <label for="scrollDistance">Distancia de scroll (px):</label>
+                            <input type="number" id="scrollDistance" value="1000" min="100" max="5000" step="100">
+                        </div>
+                        <div class="sub-setting">
+                            <label for="scrollWaitTime">Tiempo de espera después del scroll (ms):</label>
+                            <input type="number" id="scrollWaitTime" value="1500" min="1000" max="10000" step="500">
+                        </div>
                     </div>
-                </div>
 
-                <div class="setting-group">
-                    <label>
-                        <input type="checkbox" id="detectWordPress" checked>
-                        Detectar fecha de publicación de WordPress
-                    </label>
-                </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="detectWordPress">
+                            Detectar fecha de publicación de WordPress
+                        </label>
+                    </div>
 
-                <div class="setting-group">
-                    <label for="captureMode">Modo de captura:</label>
-                    <select id="captureMode">
-                        <option value="resolution">Altura según resolución</option>
-                        <option value="fullsite">Sitio completo (Full Site)</option>
-                    </select>
-                </div>
+                    <div class="setting-group">
+                        <label for="captureMode">Modo de captura:</label>
+                        <select id="captureMode">
+                            <option value="resolution">Altura según resolución</option>
+                            <option value="fullsite">Sitio completo (Full Site)</option>
+                        </select>
+                    </div>
 
-                <div class="setting-group">
-                    <label for="waitTime">Tiempo de espera antes de captura (ms):</label>
-                    <input type="number" id="waitTime" value="2000" min="500" max="10000" step="500">
-                </div>
+                    <div class="setting-group">
+                        <label for="waitTime">Tiempo de espera antes de captura (ms):</label>
+                        <input type="number" id="waitTime" value="1500" min="500" max="10000" step="500">
+                    </div>
 
-                <input type="hidden" id="navigationTimeout" value="60">
-                <input type="hidden" id="browserPath" value="auto">
+                    <input type="hidden" id="navigationTimeout" value="60">
+                    <input type="hidden" id="browserPath" value="auto">
+                </div>
             </div>
         </div>
 
@@ -140,11 +194,39 @@
         </div>
 
         <div id="resultsSection" class="results-section" style="display: none;">
-            <div id="imageActions" style="display: none;">
+            <div id="imageActions" style="display: none; text-align: center;">
                 <button id="openFolderBtn" class="primary-btn">
                     <span class="btn-icon">📁</span>
                     Ir a carpeta de destino
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Éxito -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal success-modal">
+            <div class="success-checkmark">✓</div>
+            <h3>Reporte creado exitosamente</h3>
+            <div class="modal-actions">
+                <button id="modalOpenFolderBtn" class="primary-btn">
+                    <span class="btn-icon">📁</span>
+                    Ir a la carpeta de destino
+                </button>
+                <button id="modalAcceptBtn" class="secondary-btn">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/reemplazar URLs -->
+    <div id="urlModal" class="modal-overlay">
+        <div class="modal url-modal">
+            <h3>URLs Existentes Detectadas</h3>
+            <p>Ya hay <span id="existingCount">0</span> URLs. ¿Qué deseas hacer con las <span id="newCount">0</span> nuevas?</p>
+            <div class="modal-actions url-modal-actions">
+                <button id="modalAdd" class="primary-btn">➕ Agregar al final</button>
+                <button id="modalReplace" class="secondary-btn">🔄 Reemplazar todas</button>
+                <button id="modalCancel" class="secondary-btn">Cancelar</button>
             </div>
         </div>
     </div>

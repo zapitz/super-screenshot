@@ -1,112 +1,178 @@
-# Super Screenshot
+# 📸 Super Screenshot
 
-A powerful Electron application for batch URL screenshot capture with PDF generation capabilities.
+Aplicación de escritorio para captura masiva de screenshots de URLs con generación automática de PDFs.
 
-## Features
+## ✨ Características
 
-- 📸 **Batch Screenshot Capture**: Process multiple URLs at once
-- 📄 **PDF Generation**: Create professional PDFs with custom cover pages
-- 🎯 **Smart URL Extraction**: Paste mixed content and automatically extract URLs
-- 🖼️ **Multiple Capture Modes**: 
-  - Resolution-based height (captures exactly what fits in the specified resolution)
-  - Full site capture (captures entire page including footer)
-- 🎨 **Customizable Settings**:
-  - Multiple preset resolutions (1440x1600 default)
-  - Custom resolution support
-  - Lazy loading scroll support
-  - WordPress publish date detection
-- 📁 **Organized Output**: 
-  - Images saved to Downloads/YYYYMMDD-HHMM/
-  - PDFs saved directly to Downloads with custom names
+- **Captura por lotes**: Procesa múltiples URLs simultáneamente
+- **Extracción automática de URLs**: Pega cualquier texto y extrae las URLs automáticamente
+- **Dos modos de salida**:
+  - 📷 **Imágenes PNG** individuales con nombres inteligentes (YY-MM-DD-titulo.png)
+  - 📄 **PDF único** con todas las capturas y portada personalizable
+- **Detección de fechas WordPress**: Identifica automáticamente la fecha de publicación
+- **Configuración avanzada**: Resoluciones personalizadas, lazy loading, timeouts, y más
+- **Portadas personalizables**: Agrega logo, título y descripción a tus PDFs
+- **Reintentos automáticos**: Sistema inteligente de reintentos para capturas fallidas (3 intentos)
+- **Cross-platform**: Compatible con Windows, macOS y Linux
+- **100% Privado**: Todo el procesamiento es local, sin telemetría
 
-## Installation
+## 🚀 Instalación
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
+### Para Usuarios
 
-### Setup
+**Próximamente**: Descarga el instalador para tu sistema operativo desde la [página de releases](https://github.com/zapitz/super-screenshot/releases).
+
+### Para Desarrolladores
+
+**Requisitos previos:**
+- Node.js v14 o superior
+- Chrome, Edge, Brave o Chromium instalado
+- npm o yarn
+
+**Setup:**
 ```bash
-# Clone the repository
+# Clonar el repositorio
 git clone https://github.com/zapitz/super-screenshot.git
-
-# Navigate to the project directory
 cd super-screenshot
 
-# Install dependencies
+# Instalar dependencias
 npm install
 
-# Start the application
+# Ejecutar en modo desarrollo
 npm start
 ```
 
-## Usage
+## 📖 Uso
 
-1. **Select Capture Mode**: Choose between "Solo Imágenes" (Images Only) or "Generar PDF"
-2. **Paste URLs**: Paste your URLs in the text area (one per line or mixed in text)
-3. **Configure Settings**: 
-   - Select resolution (default: 1440x1600)
-   - Choose capture mode (resolution height or full site)
-   - Enable/disable WordPress date detection
-   - Set wait times and scroll options
-4. **Start Capture**: Click "Iniciar Capturas" or "Generar PDF"
-5. **Access Results**: Click "Ir a carpeta de destino" to open the output folder
+### Inicio Rápido
 
-## Configuration
+1. **Selecciona el modo de captura**:
+   - 📷 Solo Imágenes (guarda PNGs en carpeta)
+   - 📄 Generar PDF (crea un PDF con todas las capturas)
 
-Access the configuration menu (⚙️) to customize:
-- PDF font size, margins, and quality
-- Cover page settings (title, description, logo)
-- Screenshot capture delays
-- Show/hide publication dates
-- Show/hide generation date on cover
+2. **Pega tus URLs**:
+   - Una por línea, o
+   - Pega cualquier texto y las URLs se extraerán automáticamente
 
-## Development
+3. **Configura opciones** (opcional):
+   - Resolución de pantalla (default: 1440x1600)
+   - Lazy loading para contenido dinámico
+   - Modo de captura (viewport o sitio completo)
+   - WordPress date detection
 
-### Project Structure
-```
-super-screenshot/
-├── main.js              # Electron main process
-├── renderer.js          # Renderer process logic
-├── screenshot.js        # Puppeteer screenshot module
-├── pdf-generator.js     # PDF generation module
-├── browser-detector.js  # Browser detection utility
-├── config.html         # Configuration page
-├── config-renderer.js  # Configuration page logic
-├── index.html          # Main application UI
-├── styles.css          # Application styles
-└── package.json        # Project dependencies
-```
+4. **Haz clic en "Iniciar Capturas"** o "Generar PDF"
 
-### Building for Distribution
+5. **Accede a los resultados**: Botón "Ir a carpeta de destino"
+
+### Configuración Avanzada
+
+Haz clic en ⚙️ para acceder a:
+
+- **PDF**: Márgenes, tamaños de fuente, calidad de imagen
+- **Portada**: Logo, título, descripción, fecha
+- **Capturas**: Delays adicionales, espera de imágenes, bloqueo de anuncios
+
+## 🎯 Casos de Uso
+
+- **Documentación web**: Crea PDFs de múltiples páginas de documentación
+- **Portfolio**: Captura versiones finales de sitios web
+- **Reportes**: Genera reportes visuales de sitios competidores
+- **Archivado**: Guarda versiones estáticas de contenido web
+- **QA/Testing**: Comparación visual de diferentes versiones
+- **Marketing**: Crea presentaciones con capturas de campañas
+
+## ⚙️ Requisitos del Sistema
+
+- **Sistema Operativo**: Windows 10+, macOS 10.13+, o Linux
+- **Navegador**: Chrome, Edge, Brave, o Chromium instalado
+- **RAM**: Mínimo 4GB recomendado
+- **Espacio**: ~500MB para la aplicación + espacio para capturas
+
+## 🛠️ Comandos para Desarrolladores
+
 ```bash
-# Build for current platform
+# Ejecutar aplicación
+npm start
+
+# Ejecutar en modo desarrollo
+npm run dev
+
+# Construir para tu plataforma
 npm run build
 
-# Build for specific platform
-npm run build:win
+# Construir para plataformas específicas
 npm run build:mac
+npm run build:win
 npm run build:linux
 ```
 
-## Contributing
+## 📝 Formato de Archivos
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Modo Imágenes
+Los archivos se guardan con el formato: `YY-MM-DD-titulo-del-articulo.png`
 
-## License
+Ejemplo: `25-01-15-guia-completa-de-javascript.png`
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Modo PDF
+- Nombre personalizable o automático con timestamp
+- Incluye portada opcional con logo
+- Cada captura en una página separada
+- URLs clicables en el PDF
 
-## Author
+## 🐛 Solución de Problemas
 
-**zapitz**
+### La aplicación no detecta mi navegador
+- **Solución**: La app detecta automáticamente Chrome, Edge, Brave y Chromium. Si no encuentra ninguno, instala uno de estos navegadores.
 
-## Acknowledgments
+### Error "Navigation timeout"
+- **Causa**: La página tarda demasiado en cargar
+- **Solución**: Aumenta el timeout en configuración o verifica tu conexión
+- **Nota**: El sistema reintenta automáticamente 3 veces antes de fallar
 
-- Built with [Electron](https://www.electronjs.org/)
-- Screenshot capture powered by [Puppeteer](https://pptr.dev/)
-- PDF generation using [PDFKit](https://pdfkit.org/)
+### Las imágenes no cargan completamente
+- **Solución**: Activa "Lazy loading scroll" en configuración
+
+### El PDF está vacío o tiene errores
+- **Causa**: Capturas fallidas
+- **Solución**: Revisa la consola de procesos para ver qué URLs fallaron
+
+## 🔒 Seguridad y Privacidad
+
+- ✅ Todo el procesamiento es **local** en tu máquina
+- ✅ **No se envían datos** a servidores externos
+- ✅ **No hay telemetría** ni tracking
+- ✅ Código fuente **100% abierto** y auditable
+- ✅ **contextIsolation habilitado** para seguridad de Electron
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Si quieres mejorar Super Screenshot:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 🙏 Créditos
+
+Desarrollado con:
+- [Electron](https://www.electronjs.org/) - Framework de aplicaciones de escritorio
+- [Puppeteer](https://pptr.dev/) - Control de navegador headless
+- [PDFKit](https://pdfkit.org/) - Generación de PDFs
+
+## 📧 Soporte
+
+¿Tienes preguntas o problemas?
+
+- 🐛 [Reporta un bug](https://github.com/zapitz/super-screenshot/issues)
+- 💡 [Solicita una feature](https://github.com/zapitz/super-screenshot/issues)
+- 📖 [Lee la documentación completa](https://github.com/zapitz/super-screenshot/wiki)
+
+---
+
+**Super Screenshot** - Hecho con ❤️ para simplificar las capturas de pantalla masivas
