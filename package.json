@@ -28,7 +28,8 @@
   },
   "devDependencies": {
     "electron": "^37.2.5",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "electron-icon-builder": "^2.0.1"
   },
   "build": {
     "appId": "com.superscreenshot.app",
@@ -48,7 +49,15 @@
       "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
       "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
       "!**/{appveyor.yml,.travis.yml,circle.yml}",
-      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}",
+      "!**/.local-chromium",
+      "!**/.local-browsers",
+      "!**/chrome-mac",
+      "!**/chrome-win",
+      "!**/chrome-linux",
+      "!**/chromium-*",
+      "!**/node_modules/puppeteer/.local-chromium/**/*",
+      "!**/node_modules/puppeteer-pdf/**/.*-chromium/**/*"
     ],
     "mac": {
       "category": "public.app-category.productivity",
