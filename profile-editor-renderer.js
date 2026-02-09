@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron');
+// Use electronAPI exposed via preload.js (secure context isolation)
 
 // Current state
 let currentProfileId = 'default';
@@ -72,8 +72,8 @@ function setupTabs() {
 
 async function loadProfilesList() {
     try {
-        profilesList = await ipcRenderer.invoke('get-profiles-list');
-        const activeId = await ipcRenderer.invoke('get-active-profile-id');
+        profilesList = await window.electronAPI.getProfilesList();
+        const activeId = await window.electronAPI.getActiveProfileId();
 
         // Use current profile ID if set, otherwise use active
         if (!currentProfileId || !profilesList.some(p => p.id === currentProfileId)) {
@@ -103,7 +103,7 @@ async function loadProfilesList() {
 
 async function loadCurrentProfile() {
     try {
-        currentProfile = await ipcRenderer.invoke('get-profile', currentProfileId);
+        currentProfile = await window.electronAPI.getProfile(currentProfileId);
         if (currentProfile) {
             populateFormWithProfile(currentProfile);
             updateProfileColorIndicator();
@@ -313,7 +313,7 @@ function setupProfileManagement() {
         await saveCurrentProfile();
 
         // Try to switch profile
-        const result = await ipcRenderer.invoke('set-active-profile', newProfileId);
+        const result = await window.electronAPI.setActiveProfile(newProfileId);
 
         if (result && result.success) {
             currentProfileId = newProfileId;
@@ -350,12 +350,12 @@ function setupProfileManagement() {
             return;
         }
 
-        const result = await ipcRenderer.invoke('create-profile', { name, description });
+        const result = await window.electronAPI.createProfile({ name, description });
 
         if (result.success) {
             document.getElementById('newProfileModal').classList.remove('active');
             currentProfileId = result.profile.id;
-            await ipcRenderer.invoke('set-active-profile', currentProfileId);
+            await window.electronAPI.setActiveProfile(currentProfileId);
             await loadProfilesList();
             await loadCurrentProfile();
             showToast('Perfil creado exitosamente');
@@ -386,12 +386,12 @@ function setupProfileManagement() {
             return;
         }
 
-        const result = await ipcRenderer.invoke('duplicate-profile', currentProfileId, newName);
+        const result = await window.electronAPI.duplicateProfile(currentProfileId, newName);
 
         if (result.success) {
             document.getElementById('duplicateProfileModal').classList.remove('active');
             currentProfileId = result.profile.id;
-            await ipcRenderer.invoke('set-active-profile', currentProfileId);
+            await window.electronAPI.setActiveProfile(currentProfileId);
             await loadProfilesList();
             await loadCurrentProfile();
             showToast('Perfil duplicado exitosamente');
@@ -407,7 +407,7 @@ function setupProfileManagement() {
         const confirmed = confirm('¿Restablecer el perfil Default a sus valores de fábrica? Se eliminarán logos y firmas.');
         if (!confirmed) return;
 
-        const result = await ipcRenderer.invoke('reset-default-profile');
+        const result = await window.electronAPI.resetDefaultProfile();
 
         if (result.success) {
             await loadCurrentProfile();
@@ -427,7 +427,7 @@ function setupProfileManagement() {
         const confirmed = confirm(`¿Está seguro de eliminar el perfil "${currentProfile.name}"?`);
         if (!confirmed) return;
 
-        const result = await ipcRenderer.invoke('delete-profile', currentProfileId);
+        const result = await window.electronAPI.deleteProfile(currentProfileId);
 
         if (result.success) {
             currentProfileId = 'default';
@@ -441,7 +441,7 @@ function setupProfileManagement() {
 
     // Export profile button
     document.getElementById('exportProfileBtn').addEventListener('click', async () => {
-        const result = await ipcRenderer.invoke('export-profile', currentProfileId);
+        const result = await window.electronAPI.exportProfile(currentProfileId);
 
         if (result.success) {
             showToast('Perfil exportado exitosamente');
@@ -452,11 +452,11 @@ function setupProfileManagement() {
 
     // Import profile button
     document.getElementById('importProfileBtn').addEventListener('click', async () => {
-        const result = await ipcRenderer.invoke('import-profile');
+        const result = await window.electronAPI.importProfile();
 
         if (result.success) {
             currentProfileId = result.profile.id;
-            await ipcRenderer.invoke('set-active-profile', currentProfileId);
+            await window.electronAPI.setActiveProfile(currentProfileId);
             await loadProfilesList();
             await loadCurrentProfile();
             showToast('Perfil importado exitosamente');
@@ -728,7 +728,7 @@ function setupAssetUpload(selectBtnId, fileInputId, removeBtnId, previewId, asse
                 reader.onload = async (event) => {
                     const base64Data = event.target.result;
 
-                    const result = await ipcRenderer.invoke('save-profile-asset', {
+                    const result = await window.electronAPI.saveProfileAsset({
                         profileId: currentProfileId,
                         assetType: assetType,
                         base64: base64Data,
@@ -762,7 +762,7 @@ function setupAssetUpload(selectBtnId, fileInputId, removeBtnId, previewId, asse
     });
 
     removeBtn.addEventListener('click', async () => {
-        const result = await ipcRenderer.invoke('remove-profile-asset', {
+        const result = await window.electronAPI.removeProfileAsset({
             profileId: currentProfileId,
             assetType: assetType
         });
@@ -800,7 +800,7 @@ function setupSaveButton() {
 async function saveCurrentProfile() {
     const formData = collectFormData();
 
-    const result = await ipcRenderer.invoke('update-profile', currentProfileId, formData);
+    const result = await window.electronAPI.updateProfile(currentProfileId, formData);
 
     if (result.success) {
         currentProfile = result.profile;

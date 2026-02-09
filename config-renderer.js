@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron');
+// Use electronAPI exposed via preload.js (secure context isolation)
 
 // Default capture settings (optimized values)
 const DEFAULT_CAPTURE_SETTINGS = {
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadGeneralSettings() {
     try {
-        const settings = await ipcRenderer.invoke('get-general-settings');
+        const settings = await window.electronAPI.getGeneralSettings();
         generalSettings = settings || generalSettings;
 
         // Populate form
@@ -78,7 +78,7 @@ function updateFolderDisplay() {
 
 function setupFolderSelector() {
     document.getElementById('selectFolderBtn').addEventListener('click', async () => {
-        const result = await ipcRenderer.invoke('select-output-folder');
+        const result = await window.electronAPI.selectOutputFolder();
         if (result.success) {
             generalSettings.outputFolder = result.path;
             updateFolderDisplay();
@@ -113,8 +113,8 @@ async function saveSettings() {
 
     // Save both settings
     const [generalResult, captureResult] = await Promise.all([
-        ipcRenderer.invoke('save-general-settings', generalSettings),
-        ipcRenderer.invoke('save-capture-settings', captureSettings)
+        window.electronAPI.saveGeneralSettings(generalSettings),
+        window.electronAPI.saveCaptureSettings(captureSettings)
     ]);
 
     if (generalResult.success && captureResult.success) {
@@ -173,7 +173,7 @@ function showToast(message, isError = false) {
 
 async function loadCaptureSettings() {
     try {
-        const settings = await ipcRenderer.invoke('get-capture-settings');
+        const settings = await window.electronAPI.getCaptureSettings();
         captureSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...settings };
         populateCaptureSettingsForm();
     } catch (error) {
@@ -226,7 +226,7 @@ function setupResetButton() {
         populateCaptureSettingsForm();
 
         // Save to backend
-        const result = await ipcRenderer.invoke('save-capture-settings', captureSettings);
+        const result = await window.electronAPI.saveCaptureSettings(captureSettings);
 
         if (result.success) {
             showToast('Opciones de captura restablecidas');
@@ -246,7 +246,7 @@ function setupResetButton() {
         populateCaptureSettingsForm();
 
         // Save to backend
-        const result = await ipcRenderer.invoke('save-capture-settings', captureSettings);
+        const result = await window.electronAPI.saveCaptureSettings(captureSettings);
 
         if (result.success) {
             showToast('Configuración avanzada restablecida');

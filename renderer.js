@@ -1,6 +1,5 @@
-const { ipcRenderer } = require('electron');
-const { getDefaultBrowser } = require('./browser-detector');
-const { WordPressIntegration } = require('./wordpress-integration');
+// Use electronAPI exposed via preload.js (secure context isolation)
+const { WordPressIntegration } = window.nodeModules.wordPressIntegration;
 
 let currentProcess = null;
 let wpIntegration = null;
@@ -152,10 +151,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // Browser auto-detection happens in background
-    detectedBrowsers = await ipcRenderer.invoke('detect-browsers');
+    detectedBrowsers = await window.electronAPI.detectBrowsers();
 
     // Load capture settings from config
-    captureSettings = await ipcRenderer.invoke('get-capture-settings') || {};
+    captureSettings = await window.electronAPI.getCaptureSettings() || {};
 
     // Load profiles
     await loadProfiles();
@@ -182,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modalAcceptBtn')?.addEventListener('click', hideSuccessModal);
     document.getElementById('modalOpenFolderBtn')?.addEventListener('click', async () => {
         if (window.currentOutputDir) {
-            await ipcRenderer.invoke('open-folder', window.currentOutputDir);
+            await window.electronAPI.openFolder(window.currentOutputDir);
         }
         hideSuccessModal();
     });
@@ -207,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Normal profile change
-        const result = await ipcRenderer.invoke('set-active-profile', value);
+        const result = await window.electronAPI.setActiveProfile(value);
         if (result.success) {
             activeProfileId = value;
             updateProfileIndicator();
@@ -230,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearCacheBtn.disabled = true;
         clearCacheBtn.textContent = '⏳';
 
-        const result = await ipcRenderer.invoke('clear-cache');
+        const result = await window.electronAPI.clearCache();
 
         if (result.success) {
             clearCacheBtn.textContent = '✅';
@@ -251,11 +250,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', async (e) => {
         if (e.target.id === 'openFolderBtn' || e.target.parentElement?.id === 'openFolderBtn') {
             if (window.currentOutputDir) {
-                await ipcRenderer.invoke('open-folder', window.currentOutputDir);
+                await window.electronAPI.openFolder(window.currentOutputDir);
             } else {
                 // Open Downloads folder as fallback
-                const downloadsPath = await ipcRenderer.invoke('get-app-path');
-                await ipcRenderer.invoke('open-folder', downloadsPath);
+                const downloadsPath = await window.electronAPI.getAppPath();
+                await window.electronAPI.openFolder(downloadsPath);
             }
         }
     });
@@ -378,7 +377,7 @@ function getSettings() {
 
 async function processUrls(urls) {
     const consoleOutput = document.getElementById('consoleOutput');
-    const screenshotModule = require('./screenshot');
+    const screenshotModule = window.nodeModules.screenshot;
 
     currentProcess = { cancelled: false };
     const settings = getSettings();
@@ -390,7 +389,7 @@ async function processUrls(urls) {
 
         // Clear cache before starting
         addConsoleMessage('🧹', 'Limpiando caché del navegador...');
-        await ipcRenderer.invoke('clear-cache');
+        await window.electronAPI.clearCache();
         addConsoleMessage('✅', 'Caché limpiado');
 
         addConsoleMessage('🚀', `Iniciando captura de ${urls.length} URLs...`);
@@ -402,7 +401,7 @@ async function processUrls(urls) {
     let outputDir = null;
     if (settings.mode === 'images') {
         addConsoleMessage('📁', 'Creando carpeta de salida...');
-        const folderResult = await ipcRenderer.invoke('create-output-folder');
+        const folderResult = await window.electronAPI.createOutputFolder();
         if (!folderResult.success) {
             addConsoleMessage('❌', `Error al crear carpeta: ${folderResult.error}`);
             resetUI();
@@ -608,7 +607,7 @@ async function generatePDF() {
         // Use profile name if non-default profile
         if (activeProfileId !== 'default') {
             try {
-                const profile = await ipcRenderer.invoke('get-active-profile');
+                const profile = await window.electronAPI.getActiveProfile();
                 if (profile && profile.name) {
                     pdfFileName = profile.name;
                 }
@@ -629,7 +628,7 @@ async function generatePDF() {
 
     try {
         // Get current configuration (flattened from active profile)
-        const config = await ipcRenderer.invoke('get-config');
+        const config = await window.electronAPI.getConfig();
 
         // Use short description if provided
         const shortDesc = document.getElementById('pdfShortDesc')?.value?.trim();
@@ -637,10 +636,10 @@ async function generatePDF() {
             config.coverDescription = shortDesc;
         }
 
-        const pdfModule = require('./pdf-generator');
+        const pdfModule = window.nodeModules.pdfGenerator;
         const pdfBuffer = await pdfModule.generatePDF(successfulResults, config);
 
-        const result = await ipcRenderer.invoke('save-pdf', pdfBuffer, fileName);
+        const result = await window.electronAPI.savePdf(pdfBuffer, fileName);
 
         if (result.success) {
             addConsoleMessage('✅', `PDF guardado exitosamente`);
@@ -668,8 +667,8 @@ async function generatePDF() {
 
 async function loadProfiles() {
     try {
-        const profiles = await ipcRenderer.invoke('get-profiles-list');
-        activeProfileId = await ipcRenderer.invoke('get-active-profile-id');
+        const profiles = await window.electronAPI.getProfilesList();
+        activeProfileId = await window.electronAPI.getActiveProfileId();
 
         const select = document.getElementById('activeProfile');
         select.innerHTML = '';
@@ -879,7 +878,7 @@ async function validateUrl(url) {
 
     try {
         // Use IPC to validate from main process (avoids CORS)
-        const result = await ipcRenderer.invoke('validate-url', url);
+        const result = await window.electronAPI.validateUrl(url);
 
         urlsData[idx].statusCode = result.statusCode;
 

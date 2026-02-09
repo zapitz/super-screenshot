@@ -1,4 +1,5 @@
-const { ipcRenderer } = require('electron');
+// Use electronAPI exposed via preload.js (secure context isolation)
+// Note: This module can be used both from preload (Node context) and from renderer (browser context)
 
 // =====================================================
 // Searchable Select Component
@@ -352,7 +353,7 @@ class WordPressIntegration {
     }
 
     async loadSites() {
-        this.sites = await ipcRenderer.invoke('get-wordpress-sites') || [];
+        this.sites = await window.electronAPI.getWordPressSites() || [];
     }
 
     setupEventListeners() {
@@ -517,7 +518,7 @@ class WordPressIntegration {
     }
 
     async loadProfilesSelect(selectedProfileId = null) {
-        const profiles = await ipcRenderer.invoke('get-profiles-list');
+        const profiles = await window.electronAPI.getProfilesList();
         const select = document.getElementById('wpSiteProfile');
 
         select.innerHTML = profiles.map(p =>
@@ -572,7 +573,7 @@ class WordPressIntegration {
         }
 
         // Get profile name for display
-        const profiles = await ipcRenderer.invoke('get-profiles-list');
+        const profiles = await window.electronAPI.getProfilesList();
         const profile = profiles.find(p => p.id === profileId);
 
         const site = {
@@ -586,7 +587,7 @@ class WordPressIntegration {
             lastSync: new Date().toISOString()
         };
 
-        await ipcRenderer.invoke('save-wordpress-site', site);
+        await window.electronAPI.saveWordPressSite(site);
 
         this.closeSiteForm();
         await this.loadSites();
@@ -598,7 +599,7 @@ class WordPressIntegration {
             return;
         }
 
-        await ipcRenderer.invoke('delete-wordpress-site', siteId);
+        await window.electronAPI.deleteWordPressSite(siteId);
         await this.loadSites();
         this.renderSitesList();
     }
@@ -611,12 +612,12 @@ class WordPressIntegration {
         this.currentSite = site;
 
         // Check if profile needs to change
-        const activeProfileId = await ipcRenderer.invoke('get-active-profile-id');
+        const activeProfileId = await window.electronAPI.getActiveProfileId();
         if (site.profileId && site.profileId !== activeProfileId) {
-            await ipcRenderer.invoke('set-active-profile', site.profileId);
+            await window.electronAPI.setActiveProfile(site.profileId);
 
             // Get profile name for notification
-            const profiles = await ipcRenderer.invoke('get-profiles-list');
+            const profiles = await window.electronAPI.getProfilesList();
             const profile = profiles.find(p => p.id === site.profileId);
 
             if (this.addConsoleMessage) {

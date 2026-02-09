@@ -214,9 +214,10 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      webSecurity: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,  // Needed for puppeteer/screenshot module
+      preload: path.join(__dirname, 'preload.js')
     },
     icon: path.join(__dirname, 'icon.png')
   });
