@@ -20,10 +20,14 @@
         }
 
         .editor-header {
-            display: flex;
-            align-items: center;
+            position: relative;
+            text-align: center;
             margin-bottom: 30px;
-            gap: 20px;
+        }
+
+        .editor-header h1 {
+            color: #4fc3f7;
+            margin: 0;
         }
 
         .back-btn {
@@ -43,6 +47,19 @@
         .back-btn:hover {
             border-color: #4fc3f7;
             color: #4fc3f7;
+        }
+
+        .back-btn-absolute {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .btn-icon-light {
+            color: #4fc3f7;
+            font-weight: bold;
+            font-size: 1.1em;
         }
 
         /* Profile Management */
@@ -278,11 +295,11 @@
 <body>
     <div class="editor-container">
         <div class="editor-header">
-            <button id="backBtn" class="back-btn">
+            <button id="backBtn" class="back-btn back-btn-absolute">
                 <span>&larr;</span>
                 <span>Volver</span>
             </button>
-            <h1 id="editorTitle" style="flex: 1; text-align: center; color: #4fc3f7;">Editor de Perfil</h1>
+            <h1 id="editorTitle">Editor de Perfil</h1>
         </div>
 
         <!-- Profile Management -->
@@ -292,14 +309,14 @@
                 <span id="profileColorIndicator" class="profile-color-indicator"></span>
             </div>
             <div class="profile-btn-row">
-                <button id="newProfileBtn" class="small-btn">&#10133; Nuevo</button>
-                <button id="duplicateProfileBtn" class="small-btn">&#128464; Duplicar</button>
-                <button id="resetDefaultBtn" class="small-btn" style="display: none;">&#128260; Restablecer</button>
+                <button id="newProfileBtn" class="small-btn"><span class="btn-icon-light">+</span> Nuevo</button>
+                <button id="duplicateProfileBtn" class="small-btn">&#128203; Duplicar</button>
+                <button id="resetDefaultBtn" class="small-btn" style="display: none;">&#8635; Restablecer</button>
                 <button id="deleteProfileBtn" class="small-btn danger">&#128465; Eliminar</button>
             </div>
             <div class="import-export-row">
-                <button id="exportProfileBtn" class="small-btn">&#128228; Exportar</button>
-                <button id="importProfileBtn" class="small-btn">&#128229; Importar</button>
+                <button id="exportProfileBtn" class="small-btn">&#128230; Exportar</button>
+                <button id="importProfileBtn" class="small-btn">&#128230; Importar</button>
             </div>
         </div>
 

@@ -20,10 +20,15 @@
         }
 
         .config-header {
-            display: flex;
-            align-items: center;
+            position: relative;
+            text-align: center;
             margin-bottom: 40px;
-            gap: 20px;
+        }
+
+        .config-header h1 {
+            color: #4fc3f7;
+            margin: 0;
+            padding: 0 120px;
         }
 
         .back-btn {
@@ -43,6 +48,13 @@
         .back-btn:hover {
             border-color: #4fc3f7;
             color: #4fc3f7;
+        }
+
+        .back-btn-absolute {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .config-section {
@@ -159,16 +171,131 @@
             font-size: 14px;
             margin-bottom: 15px;
         }
+
+        .info-tooltip {
+            cursor: help;
+            margin-left: 5px;
+            font-size: 14px;
+        }
+
+        .info-tooltip:hover {
+            opacity: 0.8;
+        }
+
+        .reset-btn-small {
+            background-color: #424242;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+        }
+
+        .reset-btn-small:hover {
+            background-color: #ff9800;
+            color: #1e1e1e;
+        }
     </style>
 </head>
 <body>
     <div class="config-container">
         <div class="config-header">
-            <button id="backBtn" class="back-btn">
+            <button id="backBtn" class="back-btn back-btn-absolute">
                 <span>&larr;</span>
                 <span>Volver</span>
             </button>
-            <h1 style="flex: 1; text-align: center; color: #4fc3f7;">Configuración General</h1>
+            <h1>Configuración General</h1>
+        </div>
+
+        <!-- Capture Options Section -->
+        <div class="config-section capture-settings-section">
+            <h3>&#128247; Opciones de Captura</h3>
+
+            <div class="config-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="lazyLoadScroll">
+                    Activar scroll para lazy load
+                </label>
+                <small>Actívalo si las capturas muestran imágenes grises o placeholders. Útil para blogs y sitios de noticias.</small>
+            </div>
+
+            <div class="config-group sub-setting" id="scrollDistanceGroup" style="display: none;">
+                <label for="scrollDistance">Distancia de scroll (px):</label>
+                <input type="number" id="scrollDistance" value="1000" min="100" max="5000" step="100">
+                <small>Cantidad de píxeles que se desplaza en cada paso</small>
+            </div>
+
+            <div class="config-group sub-setting" id="scrollWaitTimeGroup" style="display: none;">
+                <label for="scrollWaitTime">Tiempo de espera después del scroll (ms):</label>
+                <input type="number" id="scrollWaitTime" value="1000" min="500" max="10000" step="100">
+                <small>Tiempo para que las imágenes carguen después de cada scroll</small>
+            </div>
+
+            <div class="config-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="detectWordPress">
+                    Detectar fecha de publicación de WordPress
+                </label>
+                <small>Incluye la fecha del artículo en el nombre del archivo (YY-MM-DD-titulo.png). Útil para organizar capturas de blogs.</small>
+            </div>
+
+            <div class="config-group">
+                <label for="waitTime">Tiempo de espera antes de captura (ms):</label>
+                <input type="number" id="waitTime" value="1000" min="500" max="10000" step="100">
+                <small>Tiempo de espera después de que la página cargue</small>
+            </div>
+
+            <button id="resetCaptureOptionsBtn" class="reset-btn-small">
+                &#8635; Restablecer opciones
+            </button>
+        </div>
+
+        <!-- Advanced Settings Section -->
+        <div class="config-section advanced-settings-section">
+            <h3>&#9881; Configuración Avanzada</h3>
+            <p class="section-description">Ajusta estos valores solo si experimentas problemas con sitios específicos.</p>
+
+            <div class="config-group">
+                <label for="navigationTimeout">Timeout de navegación (segundos):</label>
+                <input type="number" id="navigationTimeout" value="30" min="10" max="120" step="5">
+                <small>Tiempo máximo para cargar una página (30-120s)</small>
+            </div>
+
+            <div class="config-group">
+                <label for="waitUntil">
+                    Esperar hasta:
+                    <span class="info-tooltip" title="Network Idle (2): Espera hasta que haya máximo 2 conexiones activas. Recomendado para la mayoría de sitios.&#10;&#10;Network Idle (0): Espera hasta que no haya conexiones. Más lento pero más completo.&#10;&#10;DOM Content Loaded: Solo espera el HTML. Más rápido pero puede perder imágenes.&#10;&#10;Load: Espera recursos básicos. Balance entre velocidad y completitud.">&#9432;</span>
+                </label>
+                <select id="waitUntil">
+                    <option value="networkidle2" selected>Network Idle (2 conexiones) - Recomendado</option>
+                    <option value="networkidle0">Network Idle (0 conexiones) - Más lento</option>
+                    <option value="domcontentloaded">DOM Content Loaded - Más rápido</option>
+                    <option value="load">Load - Estándar</option>
+                </select>
+                <small>Cuándo considerar que la página terminó de cargar</small>
+            </div>
+
+            <div class="config-group">
+                <label for="scrollInterval">Intervalo de scroll (ms):</label>
+                <input type="number" id="scrollInterval" value="800" min="300" max="2000" step="100">
+                <small>Velocidad del scroll automático para lazy load</small>
+            </div>
+
+            <div class="config-group">
+                <label for="waitForImageLoad">Espera carga de imágenes (ms):</label>
+                <input type="number" id="waitForImageLoad" value="5000" min="2000" max="15000" step="500">
+                <small>Tiempo máximo para esperar que las imágenes carguen</small>
+            </div>
+
+            <button id="resetAdvancedSettingsBtn" class="reset-btn-small">
+                &#8635; Restablecer avanzado
+            </button>
         </div>
 
         <!-- PDF Metadata Section -->

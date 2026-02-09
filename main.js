@@ -8,6 +8,19 @@ const { detectBrowserPaths } = require('./browser-detector');
 let mainWindow;
 let config = {};
 
+// Default capture settings (optimized for speed)
+const DEFAULT_CAPTURE_SETTINGS = {
+    lazyLoadScroll: false,
+    scrollDistance: 1000,
+    scrollWaitTime: 1000,
+    detectWordPress: false,
+    waitTime: 1000,
+    navigationTimeout: 30,
+    waitUntil: 'networkidle2',
+    scrollInterval: 800,
+    waitForImageLoad: 5000
+};
+
 // Default profile settings
 function getDefaultProfileSettings() {
     return {
@@ -463,6 +476,38 @@ ipcMain.handle('select-output-folder', async () => {
       return { success: true, path: filePaths[0] };
     }
     return { success: false, cancelled: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// =====================================================
+// Capture Settings IPC Handlers
+// =====================================================
+
+ipcMain.handle('get-capture-settings', () => {
+  // Ensure captureSettings exists in config
+  if (!config.captureSettings) {
+    config.captureSettings = { ...DEFAULT_CAPTURE_SETTINGS };
+  }
+  return config.captureSettings;
+});
+
+ipcMain.handle('save-capture-settings', async (event, settings) => {
+  try {
+    config.captureSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...settings };
+    await saveConfig(config);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('reset-capture-settings', async () => {
+  try {
+    config.captureSettings = { ...DEFAULT_CAPTURE_SETTINGS };
+    await saveConfig(config);
+    return { success: true, settings: config.captureSettings };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -1153,6 +1198,39 @@ ipcMain.handle('validate-url', async (event, url) => {
       resolve({ statusCode: 0 });
     }
   });
+});
+
+// =====================================================
+// WordPress Sites Management IPC Handlers
+// =====================================================
+
+ipcMain.handle('get-wordpress-sites', () => {
+    return config.wordPressSites || [];
+});
+
+ipcMain.handle('save-wordpress-site', async (event, site) => {
+    if (!config.wordPressSites) {
+        config.wordPressSites = [];
+    }
+
+    const index = config.wordPressSites.findIndex(s => s.id === site.id);
+    if (index >= 0) {
+        config.wordPressSites[index] = site;
+    } else {
+        site.id = site.id || require('crypto').randomUUID();
+        config.wordPressSites.push(site);
+    }
+
+    await saveConfig(config);
+    return site;
+});
+
+ipcMain.handle('delete-wordpress-site', async (event, siteId) => {
+    if (config.wordPressSites) {
+        config.wordPressSites = config.wordPressSites.filter(s => s.id !== siteId);
+        await saveConfig(config);
+    }
+    return true;
 });
 
 // Reset default profile to factory settings

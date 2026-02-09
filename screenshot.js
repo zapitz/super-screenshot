@@ -127,10 +127,10 @@ async function captureScreenshot(url, settings) {
             deviceScaleFactor: 1
         });
 
-        // Navigate to URL with configurable timeout
+        // Navigate to URL with configurable timeout and waitUntil
         await page.goto(url, {
-            waitUntil: 'networkidle2',
-            timeout: settings.navigationTimeout || 60000
+            waitUntil: settings.waitUntil || 'networkidle2',
+            timeout: settings.navigationTimeout || 30000
         });
 
         // Wait for additional time if specified (fixed waitForTimeout issue)
@@ -175,7 +175,7 @@ async function captureScreenshot(url, settings) {
 
         // Handle lazy loading if enabled
         if (settings.lazyLoadScroll) {
-            await autoScroll(page, settings.scrollDistance, settings.scrollWaitTime || 3000);
+            await autoScroll(page, settings.scrollDistance, settings.scrollWaitTime || 1000, settings.scrollInterval || 800, settings.waitForImageLoad || 5000);
         }
 
         // ALWAYS force load images with data-img-url (Newspaper theme and similar)
@@ -369,8 +369,8 @@ async function captureScreenshot(url, settings) {
     }
 }
 
-async function autoScroll(page, scrollDistance, scrollWaitTime = 3000) {
-    await page.evaluate(async (scrollDistance, scrollWaitTime) => {
+async function autoScroll(page, scrollDistance, scrollWaitTime = 1000, scrollInterval = 800, waitForImageLoadTime = 5000) {
+    await page.evaluate(async (scrollDistance, scrollWaitTime, scrollInterval, waitForImageLoadTime) => {
         // Function to force load all images with various lazy loading patterns
         function forceLoadAllImages() {
             // Handle standard img elements
@@ -498,7 +498,7 @@ async function autoScroll(page, scrollDistance, scrollWaitTime = 3000) {
         }
 
         // Function to wait for images to actually load
-        async function waitForImageLoad(maxWait = 8000) {
+        async function waitForImageLoad(maxWait = waitForImageLoadTime) {
             const startTime = Date.now();
 
             return new Promise(resolve => {
@@ -583,7 +583,7 @@ async function autoScroll(page, scrollDistance, scrollWaitTime = 3000) {
 
                         // Wait for images to actually load
                         console.log('Waiting for images to load...');
-                        await waitForImageLoad(Math.max(scrollWaitTime, 5000));
+                        await waitForImageLoad(Math.max(scrollWaitTime, waitForImageLoadTime));
 
                         // Scroll back to top (single jump, no gradual scroll)
                         window.scrollTo(0, 0);
@@ -599,9 +599,9 @@ async function autoScroll(page, scrollDistance, scrollWaitTime = 3000) {
                         resolve();
                     }, 500);
                 }
-            }, 800); // Slower scroll for Intersection Observers to trigger properly
+            }, scrollInterval); // Configurable scroll interval for Intersection Observers
         });
-    }, scrollDistance, scrollWaitTime);
+    }, scrollDistance, scrollWaitTime, scrollInterval, waitForImageLoadTime);
 }
 
 module.exports = {

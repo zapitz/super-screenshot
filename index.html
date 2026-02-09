@@ -21,35 +21,28 @@
             </div>
         </header>
 
-        <div class="mode-selector">
-            <h3>Selecciona el modo de captura:</h3>
-            <div class="mode-options">
-                <label class="mode-option">
-                    <input type="radio" name="captureMode" value="images" checked>
-                    <div class="mode-card">
-                        <span class="mode-icon">📷</span>
-                        <span class="mode-title">Solo Imágenes</span>
-                        <span class="mode-desc">Guarda las capturas como archivos PNG individuales en una carpeta</span>
-                    </div>
-                </label>
-                <label class="mode-option">
-                    <input type="radio" name="captureMode" value="pdf">
-                    <div class="mode-card">
-                        <span class="mode-icon">📄</span>
-                        <span class="mode-title">Generar PDF</span>
-                        <span class="mode-desc">Crea un documento PDF con todas las capturas</span>
-                    </div>
-                </label>
+        <div class="mode-selector-compact">
+            <div class="mode-toggle-row">
+                <div class="mode-toggle">
+                    <input type="radio" name="captureMode" value="images" id="modeImages" checked>
+                    <label for="modeImages" class="mode-toggle-option">
+                        <span class="mode-toggle-icon">📷</span>
+                        <span>Solo Imágenes</span>
+                    </label>
+                    <input type="radio" name="captureMode" value="pdf" id="modePdf">
+                    <label for="modePdf" class="mode-toggle-option">
+                        <span class="mode-toggle-icon">📄</span>
+                        <span>Generar PDF</span>
+                    </label>
+                </div>
+                <div class="profile-selector-inline">
+                    <label for="activeProfile">Perfil:</label>
+                    <select id="activeProfile"></select>
+                    <span id="profileIndicator" class="profile-indicator" title="Color de marca del perfil"></span>
+                </div>
             </div>
 
-            <!-- Profile selector below mode cards -->
-            <div class="profile-selector-row">
-                <label for="activeProfile">Perfil:</label>
-                <select id="activeProfile"></select>
-                <span id="profileIndicator" class="profile-indicator" title="Color de marca del perfil"></span>
-            </div>
-
-            <div id="pdfNameSection" style="display: none; margin-top: 20px;">
+            <div id="pdfNameSection" class="pdf-name-section" style="display: none;">
                 <div class="pdf-fields-row">
                     <div class="pdf-field-group">
                         <label for="pdfFileName">Nombre del archivo PDF:</label>
@@ -72,6 +65,9 @@
                 <div class="urls-header">
                     <h3>🔗 URLs a Capturar</h3>
                     <div class="urls-actions">
+                        <button id="importWordPressBtn" class="action-btn" title="Importar desde WordPress">
+                            📚 WordPress
+                        </button>
                         <button id="importCsvBtn" class="action-btn" title="Importar CSV">
                             📄 Importar CSV
                         </button>
@@ -107,16 +103,22 @@
             <div class="settings-section">
                 <h3>📷 Opciones de Captura</h3>
 
-                <div class="settings-content">
+                <div class="settings-content quick-settings">
                     <div class="setting-group">
                         <label for="resolution">Resolución de pantalla:</label>
                         <select id="resolution">
-                            <option value="1440x1600" selected>1440x1600 (Default)</option>
-                            <option value="1920x1080">1920x1080 (Full HD)</option>
-                            <option value="1366x768">1366x768 (Laptop)</option>
-                            <option value="1280x900">1280x900 (Banner/Header)</option>
-                            <option value="1280x720">1280x720 (HD)</option>
-                            <option value="375x667">375x667 (iPhone SE)</option>
+                            <optgroup label="Desktop">
+                                <option value="1440x1600" selected>1440 × 1600 (Default)</option>
+                                <option value="1920x1080">1920 × 1080 (Full HD)</option>
+                                <option value="1366x768">1366 × 768 (Laptop)</option>
+                                <option value="1280x900">1280 × 900 (Banner/Header)</option>
+                                <option value="1280x720">1280 × 720 (HD)</option>
+                            </optgroup>
+                            <optgroup label="Móvil (iPhone)">
+                                <option value="440x956">440 × 956 (iPhone 17 Pro Max)</option>
+                                <option value="402x874">402 × 874 (iPhone 17 / 17 Pro)</option>
+                                <option value="375x667">375 × 667 (iPhone SE)</option>
+                            </optgroup>
                             <option value="custom">Personalizada</option>
                         </select>
 
@@ -128,28 +130,6 @@
                     </div>
 
                     <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="lazyLoadScroll">
-                            Activar scroll para lazy load
-                        </label>
-                        <div class="sub-setting">
-                            <label for="scrollDistance">Distancia de scroll (px):</label>
-                            <input type="number" id="scrollDistance" value="1000" min="100" max="5000" step="100">
-                        </div>
-                        <div class="sub-setting">
-                            <label for="scrollWaitTime">Tiempo de espera después del scroll (ms):</label>
-                            <input type="number" id="scrollWaitTime" value="1500" min="1000" max="10000" step="500">
-                        </div>
-                    </div>
-
-                    <div class="setting-group">
-                        <label>
-                            <input type="checkbox" id="detectWordPress">
-                            Detectar fecha de publicación de WordPress
-                        </label>
-                    </div>
-
-                    <div class="setting-group">
                         <label for="captureMode">Modo de captura:</label>
                         <select id="captureMode">
                             <option value="resolution">Altura según resolución</option>
@@ -157,12 +137,8 @@
                         </select>
                     </div>
 
-                    <div class="setting-group">
-                        <label for="waitTime">Tiempo de espera antes de captura (ms):</label>
-                        <input type="number" id="waitTime" value="1500" min="500" max="10000" step="500">
-                    </div>
+                    <a href="#" id="moreOptionsLink" class="more-options-link">⚙️ Más opciones de captura...</a>
 
-                    <input type="hidden" id="navigationTimeout" value="60">
                     <input type="hidden" id="browserPath" value="auto">
                 </div>
             </div>
@@ -179,23 +155,45 @@
             </button>
         </div>
 
-        <div id="consoleSection" class="console-section" style="display: none;">
-            <div class="console-header">
-                <h3>Consola de Procesos</h3>
-                <div id="spinner" class="spinner" style="display: none;">
-                    <div class="spinner-circle"></div>
+        <!-- Barra compacta de progreso -->
+        <div id="consoleCompact" class="console-compact" style="display: none;">
+            <div class="console-compact-content">
+                <div id="compactSpinner" class="spinner-small">
+                    <div class="spinner-circle-small"></div>
                 </div>
+                <span id="compactMessage" class="compact-message">Iniciando...</span>
             </div>
-            <div id="consoleOutput" class="console-output"></div>
-            <div class="progress-bar">
-                <div id="progressFill" class="progress-fill"></div>
+            <div class="console-compact-progress">
+                <div class="progress-bar-mini">
+                    <div id="progressFillMini" class="progress-fill-mini"></div>
+                </div>
+                <span id="progressTextMini" class="progress-text-mini">0/0</span>
             </div>
-            <div id="progressText" class="progress-text">0 de 0 completadas</div>
+            <button id="expandConsoleBtn" class="expand-console-btn" title="Ver historial completo">
+                🔍
+            </button>
         </div>
 
-        <div id="resultsSection" class="results-section" style="display: none;">
-            <div id="imageActions" style="display: none; text-align: center;">
-                <button id="openFolderBtn" class="primary-btn">
+        <!-- Modal de consola completa -->
+        <div id="consoleModal" class="modal-overlay">
+            <div class="modal console-modal">
+                <div class="console-modal-header">
+                    <h3>Consola de Procesos</h3>
+                    <button id="closeConsoleModal" class="modal-close-btn">✕</button>
+                </div>
+                <div id="consoleOutput" class="console-output"></div>
+                <div class="console-modal-footer">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="progressText" class="progress-text">0 de 0 completadas</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="results-section-compact" style="display: none;">
+            <div id="imageActions" style="display: none;">
+                <button id="openFolderBtn" class="folder-btn">
                     <span class="btn-icon">📁</span>
                     Ir a carpeta de destino
                 </button>
@@ -227,6 +225,125 @@
                 <button id="modalAdd" class="primary-btn">➕ Agregar al final</button>
                 <button id="modalReplace" class="secondary-btn">🔄 Reemplazar todas</button>
                 <button id="modalCancel" class="secondary-btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal WordPress Sites -->
+    <div id="wpSitesModal" class="modal-overlay">
+        <div class="modal wp-modal">
+            <div class="modal-header">
+                <h3>📡 Sitios WordPress</h3>
+                <button class="modal-close" id="closeWpSitesModal">×</button>
+            </div>
+            <div id="wpSitesList" class="wp-sites-list">
+                <!-- Se renderiza dinamicamente -->
+            </div>
+            <div class="modal-footer">
+                <button id="addWpSiteBtn" class="primary-btn">+ Agregar Sitio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Agregar/Editar Sitio WordPress -->
+    <div id="wpSiteFormModal" class="modal-overlay">
+        <div class="modal wp-modal">
+            <div class="modal-header">
+                <h3 id="wpSiteFormTitle">Agregar Sitio WordPress</h3>
+                <button class="modal-close" id="closeWpSiteForm">×</button>
+            </div>
+            <div class="wp-form">
+                <input type="hidden" id="wpSiteId">
+                <div class="form-group">
+                    <label>Nombre del sitio</label>
+                    <input type="text" id="wpSiteName" placeholder="Mi Blog">
+                </div>
+                <div class="form-group">
+                    <label>URL del sitio</label>
+                    <input type="url" id="wpSiteUrl" placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label>API Key de ReportifyWP</label>
+                    <input type="text" id="wpSiteApiKey" placeholder="rptfy_xxxxxxxx...">
+                    <small>Genera la API Key en WordPress: ReportifyWP → Settings → Advanced</small>
+                </div>
+                <div class="form-group">
+                    <label>Perfil asociado</label>
+                    <select id="wpSiteProfile">
+                        <!-- Se llena dinamicamente con los perfiles disponibles -->
+                    </select>
+                    <small>Al importar URLs de este sitio, se usara automaticamente este perfil</small>
+                </div>
+                <div id="wpConnectionStatus"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="testWpConnection" class="secondary-btn">🔌 Probar</button>
+                <button id="saveWpSite" class="primary-btn" disabled>Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Importar URLs desde WordPress -->
+    <div id="wpImportModal" class="modal-overlay">
+        <div class="modal wp-modal wp-modal-large">
+            <div class="modal-header">
+                <h3>📥 Importar URLs</h3>
+                <button class="modal-close" id="closeWpImportModal">×</button>
+            </div>
+            <div class="wp-import-info">
+                <span id="wpImportSiteName"></span>
+            </div>
+            <div class="wp-filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Estado</label>
+                        <select id="wpFilterStatus">
+                            <option value="publish">Publicados</option>
+                            <option value="any">Todos</option>
+                            <option value="draft">Borradores</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Categoria</label>
+                        <div id="wpFilterCategoryContainer" class="searchable-select-container"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Autor</label>
+                        <div id="wpFilterAuthorContainer" class="searchable-select-container"></div>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Etiqueta</label>
+                        <div id="wpFilterTagContainer" class="searchable-select-container"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Desde</label>
+                        <input type="date" id="wpFilterStartDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>Hasta</label>
+                        <input type="date" id="wpFilterEndDate">
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group filter-group-wide">
+                        <label>Buscar</label>
+                        <input type="text" id="wpFilterKeyword" placeholder="Palabra clave...">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button id="wpPreviewCount" class="secondary-btn">🔍 Ver cantidad</button>
+                    <span id="wpPostsCount"></span>
+                </div>
+            </div>
+            <div id="wpImportProgress" class="wp-progress hidden">
+                <div class="progress-bar"><div class="progress-fill"></div></div>
+                <span id="wpProgressText">Cargando...</span>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelWpImport" class="secondary-btn">Cancelar</button>
+                <button id="startWpImport" class="primary-btn">📥 Importar URLs</button>
             </div>
         </div>
     </div>

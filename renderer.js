@@ -1,7 +1,9 @@
 const { ipcRenderer } = require('electron');
 const { getDefaultBrowser } = require('./browser-detector');
+const { WordPressIntegration } = require('./wordpress-integration');
 
 let currentProcess = null;
+let wpIntegration = null;
 let results = [];
 let detectedBrowsers = [];
 let activeProfileId = 'default';
@@ -9,6 +11,9 @@ let activeProfileId = 'default';
 // URL list management
 let urlsData = []; // Array of {url, status, statusCode}
 let pendingUrls = []; // URLs pending for modal decision
+
+// Capture settings loaded from config
+let captureSettings = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
     const startBtn = document.getElementById('startBtn');
@@ -119,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         results = [];
         startBtn.style.display = 'none';
         stopBtn.style.display = 'inline-flex';
-        document.getElementById('consoleSection').style.display = 'block';
+        showConsoleCompact();
         resultsSection.style.display = 'none';
 
         const settings = getSettings();
@@ -149,8 +154,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Browser auto-detection happens in background
     detectedBrowsers = await ipcRenderer.invoke('detect-browsers');
 
+    // Load capture settings from config
+    captureSettings = await ipcRenderer.invoke('get-capture-settings') || {};
+
     // Load profiles
     await loadProfiles();
+
+    // Initialize WordPress integration
+    wpIntegration = new WordPressIntegration(addUrls, addConsoleMessage, loadProfiles);
+
+    // More options link
+    document.getElementById('moreOptionsLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'config.html';
+    });
 
     // Short description character counter
     const shortDescInput = document.getElementById('pdfShortDesc');
@@ -242,6 +259,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     });
+
+    // Console modal event listeners
+    document.getElementById('expandConsoleBtn')?.addEventListener('click', () => {
+        document.getElementById('consoleModal')?.classList.add('active');
+    });
+
+    document.getElementById('closeConsoleModal')?.addEventListener('click', () => {
+        document.getElementById('consoleModal')?.classList.remove('active');
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('consoleModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'consoleModal') {
+            document.getElementById('consoleModal')?.classList.remove('active');
+        }
+    });
 });
 
 function getUrls() {
@@ -313,36 +346,38 @@ function getResolution() {
 
 function getSettings() {
     const browserPath = document.getElementById('browserPath').value;
-    const navigationTimeout = parseInt(document.getElementById('navigationTimeout').value) * 1000; // Convert to ms
     const mode = document.querySelector('input[name="captureMode"]:checked').value;
-    const captureMode = document.getElementById('captureMode').value;
-    
+    const captureModeSelect = document.getElementById('captureMode').value;
+
+    // Use capture settings from config, with defaults
     const settings = {
         resolution: getResolution(),
-        lazyLoadScroll: document.getElementById('lazyLoadScroll').checked,
-        scrollDistance: parseInt(document.getElementById('scrollDistance').value),
-        scrollWaitTime: parseInt(document.getElementById('scrollWaitTime').value),
-        detectWordPress: document.getElementById('detectWordPress').checked,
-        waitTime: parseInt(document.getElementById('waitTime').value),
+        // From config (capture settings)
+        lazyLoadScroll: captureSettings.lazyLoadScroll || false,
+        scrollDistance: captureSettings.scrollDistance || 1000,
+        scrollWaitTime: captureSettings.scrollWaitTime || 1000,
+        detectWordPress: captureSettings.detectWordPress || false,
+        waitTime: captureSettings.waitTime || 1000,
+        navigationTimeout: (captureSettings.navigationTimeout || 30) * 1000, // Convert to ms
+        waitUntil: captureSettings.waitUntil || 'networkidle2',
+        scrollInterval: captureSettings.scrollInterval || 800,
+        waitForImageLoad: captureSettings.waitForImageLoad || 5000,
+        // From UI
         browserPath: browserPath,
-        navigationTimeout: navigationTimeout,
         mode: mode,
-        fullPage: captureMode === 'fullsite'
+        fullPage: captureModeSelect === 'fullsite'
     };
-    
+
     // If not full page, limit to resolution height
-    if (captureMode === 'resolution') {
+    if (captureModeSelect === 'resolution') {
         settings.viewportHeightLimit = settings.resolution.height;
     }
-    
+
     return settings;
 }
 
 async function processUrls(urls) {
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
     const consoleOutput = document.getElementById('consoleOutput');
-    const spinner = document.getElementById('spinner');
     const screenshotModule = require('./screenshot');
 
     currentProcess = { cancelled: false };
@@ -350,7 +385,8 @@ async function processUrls(urls) {
 
     try {
         consoleOutput.innerHTML = '';
-        spinner.style.display = 'block';
+        // Initialize progress
+        updateProgress(0, urls.length);
 
         // Clear cache before starting
         addConsoleMessage('🧹', 'Limpiando caché del navegador...');
@@ -432,32 +468,31 @@ async function processUrls(urls) {
             if (result) {
                 results.push(result);
                 completed++;
-                const progress = (completed / urls.length) * 100;
-                progressFill.style.width = `${progress}%`;
-                progressText.textContent = `${completed} de ${urls.length} completadas`;
+                updateProgress(completed, urls.length);
             }
         });
     }
 
     if (!currentProcess.cancelled) {
         resultsSection.style.display = 'block';
-        
+
         // Show summary
         const successCount = results.filter(r => r.success).length;
         const failCount = results.filter(r => !r.success).length;
-        
-        progressText.textContent = `Completado: ${successCount} exitosas, ${failCount} fallidas`;
-        
+
+        // Update final progress text
+        const progressText = document.getElementById('progressText');
+        const progressTextMini = document.getElementById('progressTextMini');
+        if (progressText) progressText.textContent = `Completado: ${successCount} exitosas, ${failCount} fallidas`;
+        if (progressTextMini) progressTextMini.textContent = `${successCount}/${urls.length}`;
+
         // Final console message with total time
         const totalTime = ((Date.now() - totalStartTime) / 1000).toFixed(1);
         addConsoleMessage('🎉', `Proceso completado: ${successCount} exitosas, ${failCount} fallidas (${totalTime}s total)`);
-        
-        // Hide spinner
-        document.getElementById('spinner').style.display = 'none';
-        
+
         // Show appropriate actions based on mode
         const imageActions = document.getElementById('imageActions');
-        
+
         if (settings.mode === 'images') {
             imageActions.style.display = 'block';
             if (outputDir && successCount > 0) {
@@ -471,7 +506,6 @@ async function processUrls(urls) {
     } catch (error) {
         console.error('Process error:', error);
         addConsoleMessage('❌', `Error fatal: ${error.message}`);
-        document.getElementById('spinner').style.display = 'none';
     } finally {
         // Close browser when done
         try {
@@ -483,29 +517,81 @@ async function processUrls(urls) {
 
 function addConsoleMessage(icon, text) {
     const consoleOutput = document.getElementById('consoleOutput');
+    const compactMessage = document.getElementById('compactMessage');
+
+    const time = new Date().toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+
+    // Update compact message (latest message)
+    if (compactMessage) {
+        compactMessage.textContent = `[${time}] ${icon} ${text}`;
+    }
+
+    // Add to full history
     const message = document.createElement('div');
     message.className = 'console-message';
-    
-    const time = new Date().toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
-    });
-    
     message.innerHTML = `
         <span class="console-time">[${time}]</span>
         <span class="console-icon">${icon}</span>
         <span class="console-text">${text}</span>
     `;
-    
+
     consoleOutput.appendChild(message);
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
+
+function updateProgress(completed, total) {
+    const progress = (completed / total) * 100;
+
+    // Full view (modal)
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    if (progressFill) progressFill.style.width = `${progress}%`;
+    if (progressText) progressText.textContent = `${completed} de ${total} completadas`;
+
+    // Compact view
+    const progressFillMini = document.getElementById('progressFillMini');
+    const progressTextMini = document.getElementById('progressTextMini');
+    if (progressFillMini) progressFillMini.style.width = `${progress}%`;
+    if (progressTextMini) progressTextMini.textContent = `${completed}/${total}`;
+}
+
+function showConsoleCompact() {
+    const consoleCompact = document.getElementById('consoleCompact');
+    const consoleOutput = document.getElementById('consoleOutput');
+    if (consoleCompact) {
+        consoleCompact.style.display = 'flex';
+        // Clear previous messages
+        if (consoleOutput) consoleOutput.innerHTML = '';
+        // Reset progress
+        updateProgress(0, 0);
+        // Show spinner
+        showCompactSpinner();
+    }
+}
+
+function hideConsoleCompact() {
+    const consoleCompact = document.getElementById('consoleCompact');
+    if (consoleCompact) consoleCompact.style.display = 'none';
+}
+
+function showCompactSpinner() {
+    const spinner = document.getElementById('compactSpinner');
+    if (spinner) spinner.style.display = 'inline-block';
+}
+
+function hideCompactSpinner() {
+    const spinner = document.getElementById('compactSpinner');
+    if (spinner) spinner.style.display = 'none';
 }
 
 function resetUI() {
     document.getElementById('startBtn').style.display = 'inline-flex';
     document.getElementById('stopBtn').style.display = 'none';
-    document.getElementById('spinner').style.display = 'none';
+    hideCompactSpinner();
     currentProcess = null;
 }
 
@@ -757,8 +843,8 @@ async function validateAllUrls() {
         return;
     }
 
-    // Show console section if hidden
-    document.getElementById('consoleSection').style.display = 'block';
+    // Show console compact if hidden
+    showConsoleCompact();
     addConsoleMessage('🔍', `Validando ${pendingItems.length} URLs...`);
 
     // Validate in batches of 5 to avoid overwhelming the system
@@ -782,6 +868,9 @@ async function validateAllUrls() {
     const valid = urlsData.filter(u => u.status === 'valid').length;
     const errors = urlsData.filter(u => u.status === 'error').length;
     addConsoleMessage('✅', `Validación completada: ${valid} válidas, ${errors} errores`);
+
+    // Hide spinner when done
+    hideCompactSpinner();
 }
 
 async function validateUrl(url) {

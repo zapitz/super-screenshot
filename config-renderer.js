@@ -1,5 +1,18 @@
 const { ipcRenderer } = require('electron');
 
+// Default capture settings (optimized values)
+const DEFAULT_CAPTURE_SETTINGS = {
+    lazyLoadScroll: false,
+    scrollDistance: 1000,
+    scrollWaitTime: 1000,
+    detectWordPress: false,
+    waitTime: 1000,
+    navigationTimeout: 30,
+    waitUntil: 'networkidle2',
+    scrollInterval: 800,
+    waitForImageLoad: 5000
+};
+
 // Current general settings state
 let generalSettings = {
     pdfMetadata: {
@@ -9,15 +22,21 @@ let generalSettings = {
     outputFolder: null
 };
 
+// Current capture settings state
+let captureSettings = { ...DEFAULT_CAPTURE_SETTINGS };
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Load current settings
     await loadGeneralSettings();
+    await loadCaptureSettings();
 
     // Setup event listeners
     setupBackButton();
     setupFolderSelector();
     setupSaveButton();
     setupProfileEditorLink();
+    setupCaptureSettingsListeners();
+    setupResetButton();
 });
 
 // =====================================================
@@ -89,9 +108,16 @@ async function saveSettings() {
         useCoverDateAsCreation: document.getElementById('useCoverDateAsCreation').checked
     };
 
-    const result = await ipcRenderer.invoke('save-general-settings', generalSettings);
+    // Collect capture settings
+    captureSettings = collectCaptureSettings();
 
-    if (result.success) {
+    // Save both settings
+    const [generalResult, captureResult] = await Promise.all([
+        ipcRenderer.invoke('save-general-settings', generalSettings),
+        ipcRenderer.invoke('save-capture-settings', captureSettings)
+    ]);
+
+    if (generalResult.success && captureResult.success) {
         // Update button feedback
         const btn = document.getElementById('saveBtn');
         const originalText = btn.textContent;
@@ -103,7 +129,8 @@ async function saveSettings() {
             btn.style.backgroundColor = '#4fc3f7';
         }, 2000);
     } else {
-        showToast('Error al guardar: ' + result.error, true);
+        const error = generalResult.error || captureResult.error;
+        showToast('Error al guardar: ' + error, true);
     }
 }
 
@@ -138,4 +165,107 @@ function showToast(message, isError = false) {
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
+}
+
+// =====================================================
+// Capture Settings Functions
+// =====================================================
+
+async function loadCaptureSettings() {
+    try {
+        const settings = await ipcRenderer.invoke('get-capture-settings');
+        captureSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...settings };
+        populateCaptureSettingsForm();
+    } catch (error) {
+        console.error('Error loading capture settings:', error);
+        captureSettings = { ...DEFAULT_CAPTURE_SETTINGS };
+        populateCaptureSettingsForm();
+    }
+}
+
+function populateCaptureSettingsForm() {
+    // Basic capture options
+    document.getElementById('lazyLoadScroll').checked = captureSettings.lazyLoadScroll;
+    document.getElementById('scrollDistance').value = captureSettings.scrollDistance;
+    document.getElementById('scrollWaitTime').value = captureSettings.scrollWaitTime;
+    document.getElementById('detectWordPress').checked = captureSettings.detectWordPress;
+    document.getElementById('waitTime').value = captureSettings.waitTime;
+
+    // Advanced settings
+    document.getElementById('navigationTimeout').value = captureSettings.navigationTimeout;
+    document.getElementById('waitUntil').value = captureSettings.waitUntil;
+    document.getElementById('scrollInterval').value = captureSettings.scrollInterval;
+    document.getElementById('waitForImageLoad').value = captureSettings.waitForImageLoad;
+
+    // Toggle sub-settings visibility
+    toggleLazyLoadSubSettings(captureSettings.lazyLoadScroll);
+}
+
+function toggleLazyLoadSubSettings(show) {
+    document.getElementById('scrollDistanceGroup').style.display = show ? 'block' : 'none';
+    document.getElementById('scrollWaitTimeGroup').style.display = show ? 'block' : 'none';
+}
+
+function setupCaptureSettingsListeners() {
+    // Toggle lazy load sub-settings
+    document.getElementById('lazyLoadScroll').addEventListener('change', (e) => {
+        toggleLazyLoadSubSettings(e.target.checked);
+    });
+}
+
+function setupResetButton() {
+    // Reset capture options (basic settings)
+    document.getElementById('resetCaptureOptionsBtn').addEventListener('click', async () => {
+        // Reset only basic capture options
+        captureSettings.lazyLoadScroll = DEFAULT_CAPTURE_SETTINGS.lazyLoadScroll;
+        captureSettings.scrollDistance = DEFAULT_CAPTURE_SETTINGS.scrollDistance;
+        captureSettings.scrollWaitTime = DEFAULT_CAPTURE_SETTINGS.scrollWaitTime;
+        captureSettings.detectWordPress = DEFAULT_CAPTURE_SETTINGS.detectWordPress;
+        captureSettings.waitTime = DEFAULT_CAPTURE_SETTINGS.waitTime;
+
+        populateCaptureSettingsForm();
+
+        // Save to backend
+        const result = await ipcRenderer.invoke('save-capture-settings', captureSettings);
+
+        if (result.success) {
+            showToast('Opciones de captura restablecidas');
+        } else {
+            showToast('Error al restablecer: ' + result.error, true);
+        }
+    });
+
+    // Reset advanced settings
+    document.getElementById('resetAdvancedSettingsBtn').addEventListener('click', async () => {
+        // Reset only advanced settings
+        captureSettings.navigationTimeout = DEFAULT_CAPTURE_SETTINGS.navigationTimeout;
+        captureSettings.waitUntil = DEFAULT_CAPTURE_SETTINGS.waitUntil;
+        captureSettings.scrollInterval = DEFAULT_CAPTURE_SETTINGS.scrollInterval;
+        captureSettings.waitForImageLoad = DEFAULT_CAPTURE_SETTINGS.waitForImageLoad;
+
+        populateCaptureSettingsForm();
+
+        // Save to backend
+        const result = await ipcRenderer.invoke('save-capture-settings', captureSettings);
+
+        if (result.success) {
+            showToast('Configuración avanzada restablecida');
+        } else {
+            showToast('Error al restablecer: ' + result.error, true);
+        }
+    });
+}
+
+function collectCaptureSettings() {
+    return {
+        lazyLoadScroll: document.getElementById('lazyLoadScroll').checked,
+        scrollDistance: parseInt(document.getElementById('scrollDistance').value) || DEFAULT_CAPTURE_SETTINGS.scrollDistance,
+        scrollWaitTime: parseInt(document.getElementById('scrollWaitTime').value) || DEFAULT_CAPTURE_SETTINGS.scrollWaitTime,
+        detectWordPress: document.getElementById('detectWordPress').checked,
+        waitTime: parseInt(document.getElementById('waitTime').value) || DEFAULT_CAPTURE_SETTINGS.waitTime,
+        navigationTimeout: parseInt(document.getElementById('navigationTimeout').value) || DEFAULT_CAPTURE_SETTINGS.navigationTimeout,
+        waitUntil: document.getElementById('waitUntil').value || DEFAULT_CAPTURE_SETTINGS.waitUntil,
+        scrollInterval: parseInt(document.getElementById('scrollInterval').value) || DEFAULT_CAPTURE_SETTINGS.scrollInterval,
+        waitForImageLoad: parseInt(document.getElementById('waitForImageLoad').value) || DEFAULT_CAPTURE_SETTINGS.waitForImageLoad
+    };
 }
