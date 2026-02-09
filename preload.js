@@ -120,11 +120,7 @@ contextBridge.exposeInMainWorld('nodeModules', {
       const { getDefaultBrowser } = require('./browser-detector');
       return getDefaultBrowser();
     }
-  },
-
-  // WordPress integration module
-  wordPressIntegration: {
-    WordPressIntegration: require('./wordpress-integration').WordPressIntegration,
-    ReportifyWPService: require('./wordpress-integration').ReportifyWPService
   }
+  // Note: WordPress integration is loaded via script tag in HTML
+  // because it needs window.electronAPI to be available
 });

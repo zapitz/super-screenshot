@@ -1,5 +1,5 @@
 // Use electronAPI exposed via preload.js (secure context isolation)
-const { WordPressIntegration } = window.nodeModules.wordPressIntegration;
+// WordPressIntegration is loaded via script tag in index.html
 
 let currentProcess = null;
 let wpIntegration = null;
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadProfiles();
 
     // Initialize WordPress integration
-    wpIntegration = new WordPressIntegration(addUrls, addConsoleMessage, loadProfiles);
+    wpIntegration = new window.WordPressIntegration(addUrls, addConsoleMessage, loadProfiles);
 
     // More options link
     document.getElementById('moreOptionsLink').addEventListener('click', (e) => {

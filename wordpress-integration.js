@@ -789,4 +789,10 @@ class WordPressIntegration {
 }
 
 // Export for use in renderer.js
-module.exports = { WordPressIntegration, ReportifyWPService };
+// Support both CommonJS (Node/preload) and browser (window) contexts
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { WordPressIntegration, ReportifyWPService };
+} else {
+    window.WordPressIntegration = WordPressIntegration;
+    window.ReportifyWPService = ReportifyWPService;
+}
