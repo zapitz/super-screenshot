@@ -131,17 +131,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         resultsSection.style.display = 'none';
 
         const settings = getSettings();
-        
-        if (settings.mode === 'pdf') {
-            // For PDF mode, process and generate PDF immediately
-            await processUrls(urls);
-            // Auto-generate PDF after captures complete
-            if (results.filter(r => r.success).length > 0) {
-                await generatePDF();
+
+        try {
+            if (settings.mode === 'pdf') {
+                // For PDF mode, process and generate PDF immediately
+                await processUrls(urls);
+                // Auto-generate PDF after captures complete
+                if (results.filter(r => r.success).length > 0 && !currentProcess?.cancelled) {
+                    await generatePDF();
+                }
+            } else {
+                // For images mode, just process
+                await processUrls(urls);
             }
-        } else {
-            // For images mode, just process
-            await processUrls(urls);
+        } finally {
+            // Always reset UI when everything is done
+            resetUI();
         }
     });
 
@@ -497,7 +502,7 @@ async function processUrls(urls) {
             await screenshotModule.closeBrowser();
         } catch (e) {}
     }
-    resetUI();
+    // Don't reset UI here - let the caller handle it after PDF generation
 }
 
 function addConsoleMessage(icon, text) {
@@ -611,6 +616,12 @@ async function generatePDF() {
     const fileName = pdfFileName.endsWith('.pdf') ? pdfFileName : `${pdfFileName}.pdf`;
 
     addConsoleMessage('📝', `Generando PDF: ${fileName}...`);
+
+    // Update compact message to show PDF generation
+    const compactMessage = document.getElementById('compactMessage');
+    if (compactMessage) {
+        compactMessage.textContent = `Generando PDF: ${fileName}...`;
+    }
 
     try {
         // Get current configuration (flattened from active profile)
