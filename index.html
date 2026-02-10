@@ -5,19 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Screenshot</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Lucide Icons - UI icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-content">
-                <div class="header-title">
-                    <h1>Super Screenshot</h1>
-                    <p>Captura de pantalla masiva de URLs</p>
-                </div>
-                <div class="header-buttons">
-                    <button id="clearCacheBtn" class="config-btn" title="Limpiar Cache">🧹</button>
-                    <button id="configBtn" class="config-btn" title="Configuracion">⚙️</button>
-                </div>
+                <img src="assets/header-logo.png"
+                     srcset="assets/header-logo.png 1x, assets/header-logo@2x.png 2x"
+                     alt="Super Screenshot"
+                     class="header-logo">
+                <button id="configBtn" class="config-btn" title="Configuracion">
+                    <i data-lucide="settings"></i>
+                </button>
             </div>
         </header>
 
@@ -26,12 +27,12 @@
                 <div class="mode-toggle">
                     <input type="radio" name="captureMode" value="images" id="modeImages" checked>
                     <label for="modeImages" class="mode-toggle-option">
-                        <span class="mode-toggle-icon">📷</span>
+                        <span class="mode-toggle-icon"><i data-lucide="image"></i></span>
                         <span>Solo Imágenes</span>
                     </label>
                     <input type="radio" name="captureMode" value="pdf" id="modePdf">
                     <label for="modePdf" class="mode-toggle-option">
-                        <span class="mode-toggle-icon">📄</span>
+                        <span class="mode-toggle-icon"><i data-lucide="file-text"></i></span>
                         <span>Generar PDF</span>
                     </label>
                 </div>
@@ -42,45 +43,12 @@
                 </div>
             </div>
 
-            <div id="pdfNameSection" class="pdf-name-section" style="display: none;">
-                <div class="pdf-fields-row">
-                    <div class="pdf-field-group">
-                        <label for="pdfFileName">Nombre del archivo PDF:</label>
-                        <input type="text" id="pdfFileName" placeholder="super-screenshot">
-                    </div>
-                    <div class="pdf-field-group">
-                        <label for="pdfShortDesc">
-                            Descripción corta:
-                            <span class="info-icon" title="Si se completa, esta descripción reemplazará la del perfil activo en la portada del PDF.">ℹ️</span>
-                        </label>
-                        <input type="text" id="pdfShortDesc" placeholder="Ej: Reporte del 1 al 15 de enero" maxlength="200">
-                        <small class="char-counter"><span id="shortDescCount">0</span>/200</small>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="main-content">
             <div class="urls-section">
                 <div class="urls-header">
-                    <h3>🔗 URLs a Capturar</h3>
-                    <div class="urls-actions">
-                        <button id="importWordPressBtn" class="action-btn" title="Importar desde WordPress">
-                            📚 WordPress
-                        </button>
-                        <button id="importCsvBtn" class="action-btn" title="Importar CSV">
-                            📄 Importar CSV
-                        </button>
-                        <button id="pasteBtn" class="action-btn" title="Pegar URLs">
-                            📋 Pegar
-                        </button>
-                        <button id="validateBtn" class="action-btn" title="Validar URLs">
-                            🔍 Validar
-                        </button>
-                        <button id="clearBtn" class="action-btn danger" title="Limpiar todo">
-                            🗑️ Limpiar
-                        </button>
-                    </div>
+                    <h3><i data-lucide="link"></i> URLs a Capturar</h3>
                 </div>
 
                 <div class="urls-list-container">
@@ -92,8 +60,27 @@
                 </div>
 
                 <div class="url-controls">
-                    <span id="urlCount">0 URLs</span>
-                    <span id="validationStatus"></span>
+                    <div class="urls-actions">
+                        <button id="importWordPressBtn" class="action-btn" title="Importar desde WordPress">
+                            <img src="assets/wordpress-icon.svg" class="wp-icon" alt=""> WordPress
+                        </button>
+                        <button id="importCsvBtn" class="action-btn" title="Importar CSV">
+                            <i data-lucide="file-text"></i> CSV
+                        </button>
+                        <button id="pasteBtn" class="action-btn" title="Pegar URLs">
+                            <i data-lucide="clipboard"></i> Pegar
+                        </button>
+                        <button id="validateBtn" class="action-btn" title="Validar URLs">
+                            <i data-lucide="check-circle"></i> Validar
+                        </button>
+                    </div>
+                    <div class="url-controls-right">
+                        <span id="urlCount">0 URLs</span>
+                        <span id="validationStatus"></span>
+                        <button id="clearBtn" class="clear-btn" title="Limpiar todo">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -101,7 +88,7 @@
             <input type="file" id="csvInput" accept=".csv,.txt" style="display: none;">
 
             <div class="settings-section">
-                <h3>📷 Opciones de Captura</h3>
+                <h3><i data-lucide="sliders"></i> Opciones de Captura</h3>
 
                 <div class="settings-content quick-settings">
                     <div class="setting-group">
@@ -137,20 +124,37 @@
                         </select>
                     </div>
 
-                    <a href="#" id="moreOptionsLink" class="more-options-link">⚙️ Más opciones de captura...</a>
+                    <a href="#" id="moreOptionsLink" class="more-options-link"><i data-lucide="settings"></i> Más opciones de captura...</a>
 
                     <input type="hidden" id="browserPath" value="auto">
                 </div>
             </div>
         </div>
 
+        <div id="pdfNameSection" class="pdf-name-section" style="display: none;">
+            <div class="pdf-fields-row">
+                <div class="pdf-field-group">
+                    <label for="pdfFileName">Nombre del archivo PDF:</label>
+                    <input type="text" id="pdfFileName" placeholder="super-screenshot">
+                </div>
+                <div class="pdf-field-group">
+                    <label for="pdfShortDesc">
+                        Descripción corta:
+                        <i data-lucide="info" class="info-icon" title="Si se completa, esta descripción reemplazará la del perfil activo en la portada del PDF."></i>
+                    </label>
+                    <input type="text" id="pdfShortDesc" placeholder="Ej: Reporte del 1 al 15 de enero" maxlength="200">
+                    <small class="char-counter"><span id="shortDescCount">0</span>/200</small>
+                </div>
+            </div>
+        </div>
+
         <div class="action-section">
             <button id="startBtn" class="primary-btn" disabled>
-                <span class="btn-icon" id="startBtnIcon">📸</span>
+                <span class="btn-icon" id="startBtnIcon"><i data-lucide="camera"></i></span>
                 <span id="startBtnText">Iniciar Capturas</span>
             </button>
             <button id="stopBtn" class="danger-btn" style="display: none;">
-                <span class="btn-icon">⏹️</span>
+                <span class="btn-icon"><i data-lucide="square"></i></span>
                 Detener
             </button>
         </div>
@@ -170,7 +174,7 @@
                 <span id="progressTextMini" class="progress-text-mini">0/0</span>
             </div>
             <button id="expandConsoleBtn" class="expand-console-btn" title="Ver historial completo">
-                🔍
+                <i data-lucide="maximize-2"></i>
             </button>
         </div>
 
@@ -194,7 +198,7 @@
         <div id="resultsSection" class="results-section-compact" style="display: none;">
             <div id="imageActions" style="display: none;">
                 <button id="openFolderBtn" class="folder-btn">
-                    <span class="btn-icon">📁</span>
+                    <span class="btn-icon"><i data-lucide="folder-open"></i></span>
                     Ir a carpeta de destino
                 </button>
             </div>
@@ -208,7 +212,7 @@
             <h3>Reporte creado exitosamente</h3>
             <div class="modal-actions">
                 <button id="modalOpenFolderBtn" class="primary-btn">
-                    <span class="btn-icon">📁</span>
+                    <span class="btn-icon"><i data-lucide="folder-open"></i></span>
                     Ir a la carpeta de destino
                 </button>
                 <button id="modalAcceptBtn" class="secondary-btn">Aceptar</button>
@@ -222,8 +226,8 @@
             <h3>URLs Existentes Detectadas</h3>
             <p>Ya hay <span id="existingCount">0</span> URLs. ¿Qué deseas hacer con las <span id="newCount">0</span> nuevas?</p>
             <div class="modal-actions url-modal-actions">
-                <button id="modalAdd" class="primary-btn">➕ Agregar al final</button>
-                <button id="modalReplace" class="secondary-btn">🔄 Reemplazar todas</button>
+                <button id="modalAdd" class="primary-btn"><i data-lucide="plus"></i> Agregar al final</button>
+                <button id="modalReplace" class="secondary-btn"><i data-lucide="refresh-cw"></i> Reemplazar todas</button>
                 <button id="modalCancel" class="secondary-btn">Cancelar</button>
             </div>
         </div>
@@ -233,7 +237,7 @@
     <div id="wpSitesModal" class="modal-overlay">
         <div class="modal wp-modal">
             <div class="modal-header">
-                <h3>📡 Sitios WordPress</h3>
+                <h3><img src="assets/wordpress-icon.svg" class="wp-icon-header" alt=""> Sitios WordPress</h3>
                 <button class="modal-close" id="closeWpSitesModal">×</button>
             </div>
             <div id="wpSitesList" class="wp-sites-list">
@@ -277,7 +281,7 @@
                 <div id="wpConnectionStatus"></div>
             </div>
             <div class="modal-footer">
-                <button id="testWpConnection" class="secondary-btn">🔌 Probar</button>
+                <button id="testWpConnection" class="secondary-btn"><i data-lucide="plug"></i> Probar</button>
                 <button id="saveWpSite" class="primary-btn" disabled>Guardar</button>
             </div>
         </div>
@@ -287,7 +291,7 @@
     <div id="wpImportModal" class="modal-overlay">
         <div class="modal wp-modal wp-modal-large">
             <div class="modal-header">
-                <h3>📥 Importar URLs</h3>
+                <h3><i data-lucide="download"></i> Importar URLs</h3>
                 <button class="modal-close" id="closeWpImportModal">×</button>
             </div>
             <div class="wp-import-info">
@@ -333,7 +337,7 @@
                     </div>
                 </div>
                 <div class="filter-actions">
-                    <button id="wpPreviewCount" class="secondary-btn">🔍 Ver cantidad</button>
+                    <button id="wpPreviewCount" class="secondary-btn"><i data-lucide="search"></i> Ver cantidad</button>
                     <span id="wpPostsCount"></span>
                 </div>
             </div>
@@ -343,7 +347,7 @@
             </div>
             <div class="modal-footer">
                 <button id="cancelWpImport" class="secondary-btn">Cancelar</button>
-                <button id="startWpImport" class="primary-btn">📥 Importar URLs</button>
+                <button id="startWpImport" class="primary-btn"><i data-lucide="download"></i> Importar URLs</button>
             </div>
         </div>
     </div>

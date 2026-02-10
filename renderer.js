@@ -97,15 +97,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const pdfNameSection = document.getElementById('pdfNameSection');
             const startBtnText = document.getElementById('startBtnText');
             const startBtnIcon = document.getElementById('startBtnIcon');
-            
+
             if (e.target.value === 'pdf') {
                 pdfNameSection.style.display = 'block';
                 startBtnText.textContent = 'Generar PDF';
-                startBtnIcon.textContent = '📄';
+                startBtnIcon.innerHTML = '<i data-lucide="file-text"></i>';
             } else {
                 pdfNameSection.style.display = 'none';
                 startBtnText.textContent = 'Iniciar Capturas';
-                startBtnIcon.textContent = '📸';
+                startBtnIcon.innerHTML = '<i data-lucide="camera"></i>';
+            }
+            // Re-initialize icons after DOM change
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
             }
         });
     });
@@ -223,28 +227,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'config.html';
     });
 
-    // Clear cache button
-    const clearCacheBtn = document.getElementById('clearCacheBtn');
-    clearCacheBtn.addEventListener('click', async () => {
-        clearCacheBtn.disabled = true;
-        clearCacheBtn.textContent = '⏳';
-
-        const result = await window.electronAPI.clearCache();
-
-        if (result.success) {
-            clearCacheBtn.textContent = '✅';
-            setTimeout(() => {
-                clearCacheBtn.textContent = '🧹';
-                clearCacheBtn.disabled = false;
-            }, 2000);
-        } else {
-            clearCacheBtn.textContent = '❌';
-            setTimeout(() => {
-                clearCacheBtn.textContent = '🧹';
-                clearCacheBtn.disabled = false;
-            }, 2000);
-        }
-    });
+    // Initialize Lucide Icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
     
     // Open folder button
     document.addEventListener('click', async (e) => {
@@ -710,14 +696,34 @@ async function loadProfiles() {
     }
 }
 
-function updateProfileIndicator() {
+async function updateProfileIndicator() {
     const select = document.getElementById('activeProfile');
     const indicator = document.getElementById('profileIndicator');
     const selectedOption = select.options[select.selectedIndex];
 
-    if (selectedOption && indicator) {
-        const color = selectedOption.dataset.color || '#4fc3f7';
-        indicator.style.backgroundColor = color;
+    if (!selectedOption || !indicator) return;
+
+    const profileId = selectedOption.value;
+    if (profileId.startsWith('__')) return; // Skip special options
+
+    try {
+        const profile = await window.electronAPI.getProfile(profileId);
+
+        if (profile?.logos?.coverLogoPath) {
+            // Show logo with rounded corners
+            indicator.innerHTML = `<img src="file://${profile.logos.coverLogoPath}" alt="">`;
+            indicator.classList.add('has-logo');
+            indicator.style.backgroundColor = '';
+        } else {
+            // Show color if no logo
+            indicator.innerHTML = '';
+            indicator.classList.remove('has-logo');
+            indicator.style.backgroundColor = selectedOption.dataset.color || '#4fc3f7';
+        }
+    } catch (e) {
+        indicator.innerHTML = '';
+        indicator.classList.remove('has-logo');
+        indicator.style.backgroundColor = selectedOption.dataset.color || '#4fc3f7';
     }
 }
 
@@ -753,12 +759,17 @@ function renderUrlsList() {
             <div class="url-item" data-index="${index}" data-status="${item.status}">
                 <span class="url-status">${getStatusIcon(item.status)}</span>
                 <span class="url-text" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</span>
-                <button class="url-remove" onclick="removeUrl(${index})" title="Eliminar">✕</button>
+                <button class="url-remove" onclick="removeUrl(${index})" title="Eliminar"><i data-lucide="x"></i></button>
             </div>
         `).join('');
     }
 
     updateUrlCount();
+
+    // Re-initialize Lucide icons for dynamic content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 function escapeHtml(text) {

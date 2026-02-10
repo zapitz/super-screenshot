@@ -33,29 +33,18 @@ header {
     position: relative;
 }
 
-.header-title {
-    text-align: center;
+.header-logo {
+    max-width: 100%;
+    height: auto;
+    transform: scale(1.3);
+    border-radius: 16px;
+    margin-bottom: 15px;
 }
 
-.header-buttons {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+.header-content .config-btn {
     position: absolute;
     right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-header h1 {
-    font-size: 2.5em;
-    color: #4fc3f7;
-    margin-bottom: 10px;
-}
-
-header p {
-    color: #9e9e9e;
-    font-size: 1.1em;
+    top: 0;
 }
 
 .main-content {
@@ -108,11 +97,41 @@ header p {
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    gap: 12px;
+}
+
+.url-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 #urlCount {
     color: #9e9e9e;
     font-size: 14px;
+}
+
+.clear-btn {
+    background: transparent;
+    border: none;
+    color: #757575;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.clear-btn:hover {
+    color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.clear-btn [data-lucide] {
+    width: 16px;
+    height: 16px;
 }
 
 .settings-section {
@@ -375,17 +394,90 @@ button {
     background-color: transparent;
     border: 2px solid #424242;
     color: #9e9e9e;
-    font-size: 1.5em;
-    padding: 8px 12px;
+    padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.config-btn [data-lucide] {
+    width: 20px;
+    height: 20px;
 }
 
 .config-btn:hover {
     border-color: #4fc3f7;
     color: #4fc3f7;
+}
+
+.config-btn:hover [data-lucide] {
     transform: rotate(45deg);
+    transition: transform 0.3s;
+}
+
+/* Lucide Icons global styles */
+[data-lucide] {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+    vertical-align: middle;
+}
+
+.action-btn [data-lucide],
+.primary-btn [data-lucide],
+.secondary-btn [data-lucide] {
+    width: 14px;
+    height: 14px;
+}
+
+.urls-header h3 [data-lucide] {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+}
+
+.settings-section h3 [data-lucide] {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+}
+
+.mode-toggle-icon [data-lucide] {
+    width: 16px;
+    height: 16px;
+}
+
+.more-options-link [data-lucide] {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}
+
+.wp-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.wp-icon-header {
+    width: 22px;
+    height: 22px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.info-icon {
+    cursor: help;
+    margin-left: 5px;
+    color: #757575;
+}
+
+.info-icon[data-lucide] {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
 }
 
 /* Compact Mode Selector Styles */
@@ -473,9 +565,10 @@ button {
 }
 
 .pdf-name-section {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #424242;
+    margin: 15px 0;
+    padding: 15px 20px;
+    background-color: #2d2d2d;
+    border-radius: 8px;
 }
 
 .success-message {
@@ -530,12 +623,26 @@ button {
 }
 
 .profile-indicator {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
     background-color: #4fc3f7;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px #1e1e1e;
     transition: all 0.3s ease;
-    box-shadow: 0 0 0 2px #1e1e1e, 0 0 0 3px #424242;
+}
+
+.profile-indicator.has-logo {
+    background-color: #2d2d2d;
+}
+
+.profile-indicator img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .profile-indicator.profile-changed {
@@ -543,9 +650,9 @@ button {
 }
 
 @keyframes pulse-indicator {
-    0% { transform: scale(1); box-shadow: 0 0 0 2px #1e1e1e, 0 0 0 3px #424242; }
-    50% { transform: scale(1.3); box-shadow: 0 0 0 2px #1e1e1e, 0 0 8px 3px currentColor; }
-    100% { transform: scale(1); box-shadow: 0 0 0 2px #1e1e1e, 0 0 0 3px #424242; }
+    0% { transform: scale(1); box-shadow: 0 0 0 2px #1e1e1e; }
+    50% { transform: scale(1.2); box-shadow: 0 0 8px 2px #4fc3f7; }
+    100% { transform: scale(1); box-shadow: 0 0 0 2px #1e1e1e; }
 }
 
 /* Profile management styles (config page) */
@@ -769,11 +876,6 @@ button {
     font-size: 14px;
 }
 
-.info-icon {
-    cursor: help;
-    margin-left: 5px;
-}
-
 .char-counter {
     display: block;
     text-align: right;
@@ -843,12 +945,12 @@ button {
 
 .urls-actions {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
 }
 
 .action-btn {
-    padding: 6px 12px;
+    padding: 6px 10px;
     border: none;
     border-radius: 4px;
     background: #424242;
@@ -859,6 +961,7 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
 }
 
 .action-btn:hover {
@@ -869,10 +972,17 @@ button {
     background: #d32f2f;
 }
 
+.urls-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 /* Contenedor de lista con scroll */
 .urls-list-container {
     flex: 1;
-    min-height: 200px;
+    min-height: 280px;
     max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -941,9 +1051,16 @@ button {
     color: #f44336;
     cursor: pointer;
     padding: 4px 8px;
-    font-size: 14px;
     transition: opacity 0.2s;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.url-remove [data-lucide] {
+    width: 14px;
+    height: 14px;
 }
 
 .url-remove:hover {
@@ -1356,6 +1473,17 @@ button {
     margin-bottom: 15px;
 }
 
+.wp-empty-icon [data-lucide] {
+    width: 48px;
+    height: 48px;
+    stroke-width: 1.5;
+}
+
+.wp-btn [data-lucide] {
+    width: 14px;
+    height: 14px;
+}
+
 .wp-empty-state p {
     margin: 5px 0;
 }
@@ -1438,12 +1566,13 @@ button {
 }
 
 .wp-btn-import {
-    background: #1565C0;
+    background: #424242;
     color: #fff;
 }
 
 .wp-btn-import:hover {
-    background: #1976D2;
+    background: #4fc3f7;
+    color: #1e1e1e;
 }
 
 .wp-btn-delete:hover {

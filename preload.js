@@ -89,6 +89,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Cache Management
   // =====================================================
   clearCache: () => ipcRenderer.invoke('clear-cache'),
+
+  // =====================================================
+  // Shell Operations
+  // =====================================================
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
 });
 
 // Expose Node.js modules needed for the app functionality

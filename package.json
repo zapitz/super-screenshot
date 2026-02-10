@@ -1,6 +1,6 @@
 {
   "name": "super-screenshot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Aplicación para captura masiva de pantallas de URLs con generación de PDF",
   "main": "main.js",
   "scripts": {
@@ -17,8 +17,13 @@
     "electron",
     "pdf"
   ],
-  "author": "Super Screenshot Team",
+  "author": {
+    "name": "Riviera Media Digital SA de CV",
+    "email": "soporte@rivieramedia.mx",
+    "url": "https://rivieramedia.mx"
+  },
   "license": "MIT",
+  "copyright": "© 2025 Riviera Media Digital SA de CV",
   "dependencies": {
     "image-size": "^2.0.2",
     "pdfkit": "^0.17.1",
@@ -70,6 +75,18 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "background": "build/dmg-background.png",
+      "iconSize": 80,
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "contents": [
+        { "x": 150, "y": 200, "type": "file" },
+        { "x": 390, "y": 200, "type": "link", "path": "/Applications" }
+      ]
     },
     "win": {
       "target": [

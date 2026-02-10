@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de Super Screenshot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .logo-container {
+            margin-bottom: 20px;
+        }
+        .logo {
+            width: 96px;
+            height: 96px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .app-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+        .version {
+            font-size: 13px;
+            color: #4fc3f7;
+            margin-bottom: 25px;
+        }
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: #424242;
+            margin-bottom: 25px;
+        }
+        .company-info {
+            text-align: center;
+            line-height: 1.6;
+        }
+        .developer {
+            font-size: 14px;
+            color: #b0b0b0;
+            margin-bottom: 5px;
+        }
+        .company {
+            font-size: 13px;
+            color: #9e9e9e;
+            margin-bottom: 15px;
+        }
+        .copyright {
+            font-size: 11px;
+            color: #757575;
+            margin-bottom: 20px;
+        }
+        .contact {
+            font-size: 12px;
+            color: #4fc3f7;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .contact:hover {
+            color: #29b6f6;
+        }
+        .links {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .link {
+            font-size: 12px;
+            color: #757575;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .link:hover {
+            color: #4fc3f7;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="build/icon.png" alt="Super Screenshot" class="logo">
+    </div>
+    <div class="app-name">Super Screenshot</div>
+    <div class="version">Version 1.2.0</div>
+    <div class="divider"></div>
+    <div class="company-info">
+        <div class="developer">Desarrollado por Ariel Urtaza</div>
+        <div class="company">Riviera Media Digital SA de CV</div>
+        <div class="copyright">&copy; 2025 Riviera Media Digital SA de CV</div>
+        <a href="#" class="contact" onclick="openExternal('mailto:soporte@rivieramedia.mx')">soporte@rivieramedia.mx</a>
+        <div class="links">
+            <a href="#" class="link" onclick="openExternal('https://rivieramedia.mx')">rivieramedia.mx</a>
+        </div>
+    </div>
+    <script>
+        function openExternal(url) {
+            if (window.electronAPI && window.electronAPI.openExternal) {
+                window.electronAPI.openExternal(url);
+            }
+        }
+    </script>
+</body>
+</html>

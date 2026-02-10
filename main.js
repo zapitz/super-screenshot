@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const https = require('https');
@@ -6,6 +6,7 @@ const http = require('http');
 const { detectBrowserPaths } = require('./browser-detector');
 
 let mainWindow;
+let aboutWindow = null;
 let config = {};
 
 // Default capture settings (optimized for speed)
@@ -225,10 +226,141 @@ function createWindow() {
   mainWindow.loadFile('index.html');
 }
 
+function createAboutWindow() {
+  if (aboutWindow) {
+    aboutWindow.focus();
+    return;
+  }
+
+  aboutWindow = new BrowserWindow({
+    width: 360,
+    height: 420,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    title: 'Acerca de Super Screenshot',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    parent: mainWindow,
+    modal: false,
+    show: false
+  });
+
+  aboutWindow.loadFile('about.html');
+  aboutWindow.setMenuBarVisibility(false);
+
+  aboutWindow.once('ready-to-show', () => {
+    aboutWindow.show();
+  });
+
+  aboutWindow.on('closed', () => {
+    aboutWindow = null;
+  });
+}
+
+function createMenu() {
+  const isMac = process.platform === 'darwin';
+
+  const template = [
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { label: 'Acerca de Super Screenshot', click: createAboutWindow },
+        { type: 'separator' },
+        { label: 'Configuracion...', accelerator: 'Cmd+,', click: () => mainWindow.webContents.send('open-config') },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    }] : []),
+    {
+      label: 'Archivo',
+      submenu: [
+        isMac ? { role: 'close' } : { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Editar',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'Ver',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Ventana',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(isMac ? [
+          { type: 'separator' },
+          { role: 'front' }
+        ] : [
+          { role: 'close' }
+        ])
+      ]
+    },
+    {
+      label: 'Ayuda',
+      submenu: [
+        {
+          label: 'Sitio Web',
+          click: async () => {
+            await shell.openExternal('https://rivieramedia.mx');
+          }
+        },
+        {
+          label: 'Reportar un problema',
+          click: async () => {
+            await shell.openExternal('mailto:soporte@rivieramedia.mx');
+          }
+        },
+        ...(!isMac ? [
+          { type: 'separator' },
+          { label: 'Acerca de Super Screenshot', click: createAboutWindow }
+        ] : [])
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 app.whenReady().then(async () => {
   // Load config on startup
   await loadConfig();
-  
+
+  // Create menu
+  createMenu();
+
   createWindow();
 
   app.on('activate', () => {
@@ -1260,6 +1392,16 @@ ipcMain.handle('reset-default-profile', async () => {
     return { success: true, profile: defaultProfile };
   } catch (error) {
     console.error('Error resetting default profile:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Open external URL
+ipcMain.handle('open-external', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+    return { success: true };
+  } catch (error) {
     return { success: false, error: error.message };
   }
 });

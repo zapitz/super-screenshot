@@ -327,7 +327,8 @@ class ReportifyWPService {
             end_date: options.endDate,
             category: options.category,
             author: options.author,
-            tag: options.tag
+            tag: options.tag,
+            keyword_search: options.keyword
         });
     }
 }
@@ -437,11 +438,13 @@ class WordPressIntegration {
         if (this.sites.length === 0) {
             container.innerHTML = `
                 <div class="wp-empty-state">
-                    <span class="wp-empty-icon">📡</span>
+                    <span class="wp-empty-icon"><i data-lucide="globe"></i></span>
                     <p>No hay sitios WordPress configurados</p>
                     <p class="wp-empty-hint">Agrega un sitio con ReportifyWP para importar URLs</p>
                 </div>
             `;
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             return;
         }
 
@@ -454,17 +457,20 @@ class WordPressIntegration {
                 </div>
                 <div class="wp-site-actions">
                     <button class="wp-btn wp-btn-import" data-action="import" data-site-id="${site.id}">
-                        📥 Importar
+                        <i data-lucide="download"></i> Importar
                     </button>
                     <button class="wp-btn wp-btn-edit" data-action="edit" data-site-id="${site.id}">
-                        ✏️
+                        <i data-lucide="pencil"></i>
                     </button>
                     <button class="wp-btn wp-btn-delete" data-action="delete" data-site-id="${site.id}">
-                        🗑️
+                        <i data-lucide="trash-2"></i>
                     </button>
                 </div>
             </div>
         `).join('');
+
+        // Re-initialize Lucide icons for dynamic content
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // Add event listeners for actions
         container.querySelectorAll('[data-action]').forEach(btn => {
@@ -692,11 +698,18 @@ class WordPressIntegration {
         // Load tags
         try {
             const tags = await service.getTags();
-            this.tagSelect.setItems(
-                tags.map(t => ({ value: String(t.id), label: t.name, count: t.count }))
-            );
+            console.log('Tags loaded:', tags);
+            if (tags && tags.length > 0) {
+                this.tagSelect.setItems(
+                    tags.map(t => ({ value: String(t.id), label: t.name, count: t.count }))
+                );
+            } else {
+                console.log('No tags found or empty array');
+                this.tagSelect.setItems([]);
+            }
         } catch (e) {
             console.error('Error loading tags:', e);
+            this.tagSelect.setItems([]);
         }
 
         // Reset date filters
