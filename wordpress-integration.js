@@ -13,6 +13,8 @@ class SearchableSelect {
             emptyOption: { value: '', label: 'Todos' },
             maxResults: 50,
             minChars: 0,
+            remoteSearch: null, // Function for remote search: async (query) => [{value, label, count}]
+            remoteMinChars: 2,  // Minimum chars before remote search
             ...options
         };
         this.items = [];
@@ -21,6 +23,7 @@ class SearchableSelect {
         this.isOpen = false;
         this.highlightedIndex = -1;
         this.debounceTimer = null;
+        this.isLoading = false;
 
         this.init();
     }
@@ -58,7 +61,28 @@ class SearchableSelect {
         this.renderResults();
     }
 
-    filter(query) {
+    async filter(query) {
+        // If remote search is configured and query is long enough
+        if (this.options.remoteSearch && query && query.length >= this.options.remoteMinChars) {
+            this.isLoading = true;
+            this.renderLoading();
+
+            try {
+                const results = await this.options.remoteSearch(query);
+                this.filteredItems = results;
+                this.isLoading = false;
+                this.highlightedIndex = -1;
+                this.renderResults();
+            } catch (e) {
+                console.error('Remote search error:', e);
+                this.isLoading = false;
+                this.filteredItems = [];
+                this.renderResults();
+            }
+            return;
+        }
+
+        // Local filtering
         if (!query || query.length < this.options.minChars) {
             this.filteredItems = this.items;
         } else {
@@ -69,6 +93,10 @@ class SearchableSelect {
         }
         this.highlightedIndex = -1;
         this.renderResults();
+    }
+
+    renderLoading() {
+        this.resultsEl.innerHTML = `<div class="ss-no-results">Buscando...</div>`;
     }
 
     renderResults() {
@@ -91,8 +119,12 @@ class SearchableSelect {
             html += `<div class="ss-more">+${this.filteredItems.length - this.options.maxResults} mas...</div>`;
         }
 
-        if (this.filteredItems.length === 0 && this.searchEl.value) {
-            html = `<div class="ss-no-results">Sin resultados</div>`;
+        if (this.filteredItems.length === 0) {
+            if (this.options.remoteSearch && (!this.searchEl.value || this.searchEl.value.length < this.options.remoteMinChars)) {
+                html = `<div class="ss-no-results">Escribe ${this.options.remoteMinChars}+ caracteres para buscar</div>`;
+            } else if (this.searchEl.value) {
+                html = `<div class="ss-no-results">Sin resultados</div>`;
+            }
         }
 
         this.resultsEl.innerHTML = html;
@@ -316,8 +348,19 @@ class ReportifyWPService {
         return await this.request('/authors');
     }
 
-    async getTags() {
-        return await this.request('/tags');
+    async getTags(limit = 100) {
+        // Try to get tags with limit, fallback to search if too many
+        try {
+            return await this.request('/tags', { per_page: limit });
+        } catch (e) {
+            // If /tags fails (too many tags), return empty and use search
+            console.log('Tags endpoint failed, will use search instead');
+            return [];
+        }
+    }
+
+    async searchTags(query) {
+        return await this.request('/tags/search', { q: query });
     }
 
     async getPostsCount(options = {}) {
@@ -670,9 +713,19 @@ class WordPressIntegration {
             emptyOption: { value: '', label: 'Todos los autores' }
         });
 
+        // Tags use remote search due to high volume (100k+ tags)
         this.tagSelect = new SearchableSelect('wpFilterTagContainer', {
-            placeholder: 'Buscar etiqueta...',
-            emptyOption: { value: '', label: 'Todas las etiquetas' }
+            placeholder: 'Escribe para buscar...',
+            emptyOption: { value: '', label: 'Todas las etiquetas' },
+            remoteSearch: async (query) => {
+                const result = await service.searchTags(query);
+                return result.results.map(t => ({
+                    value: String(t.id),
+                    label: t.name,
+                    count: t.count
+                }));
+            },
+            remoteMinChars: 2
         });
 
         // Load categories
@@ -695,22 +748,9 @@ class WordPressIntegration {
             console.error('Error loading authors:', e);
         }
 
-        // Load tags
-        try {
-            const tags = await service.getTags();
-            console.log('Tags loaded:', tags);
-            if (tags && tags.length > 0) {
-                this.tagSelect.setItems(
-                    tags.map(t => ({ value: String(t.id), label: t.name, count: t.count }))
-                );
-            } else {
-                console.log('No tags found or empty array');
-                this.tagSelect.setItems([]);
-            }
-        } catch (e) {
-            console.error('Error loading tags:', e);
-            this.tagSelect.setItems([]);
-        }
+        // Tags use remote search - no need to preload
+        // The SearchableSelect is already configured with remoteSearch
+        console.log('Tags configured for remote search');
 
         // Reset date filters
         document.getElementById('wpFilterStartDate').value = '';
