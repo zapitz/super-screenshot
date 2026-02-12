@@ -137,13 +137,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // For PDF mode, process and generate PDF immediately
                 await processUrls(urls);
                 // Auto-generate PDF after captures complete
-                if (results.filter(r => r.success).length > 0 && !currentProcess?.cancelled) {
+                const successCount = results.filter(r => r.success).length;
+                const cancelled = currentProcess?.cancelled;
+                console.log(`PDF mode: ${successCount} successful results, cancelled=${cancelled}`);
+                if (successCount > 0 && !cancelled) {
                     await generatePDF();
+                } else if (successCount === 0) {
+                    addConsoleMessage('❌', 'No hay capturas exitosas para generar el PDF');
                 }
             } else {
                 // For images mode, just process
                 await processUrls(urls);
             }
+        } catch (error) {
+            console.error('Error in capture/PDF flow:', error);
+            addConsoleMessage('❌', `Error: ${error.message}`);
         } finally {
             // Always reset UI when everything is done
             resetUI();
@@ -634,7 +642,13 @@ async function generatePDF() {
         }
 
         const pdfModule = window.nodeModules.pdfGenerator;
-        const pdfBuffer = await pdfModule.generatePDF(successfulResults, config);
+
+        // Add timeout to prevent hanging forever
+        const pdfPromise = pdfModule.generatePDF(successfulResults, config);
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout: la generación del PDF tardó más de 2 minutos')), 120000)
+        );
+        const pdfBuffer = await Promise.race([pdfPromise, timeoutPromise]);
 
         const result = await window.electronAPI.savePdf(pdfBuffer, fileName);
 

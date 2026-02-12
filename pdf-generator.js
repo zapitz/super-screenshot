@@ -72,6 +72,10 @@ async function generatePDF(results, config = {}) {
                 }
                 resolve(Buffer.concat(chunks));
             });
+            doc.on('error', (err) => {
+                console.error('PDFKit error:', err);
+                reject(err);
+            });
 
             // Add cover page if enabled
             if (config.showCoverPage) {
